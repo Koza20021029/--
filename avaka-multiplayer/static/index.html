@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaka：島嶼的維度</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Serif+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="toast-container" style="position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px;"></div>
+    
+    <!-- Nature Cursor — Organic Dewdrop Design -->
+    <div id="cursor-dot"></div>    <!-- Core: warm amber dewdrop -->
+    <div id="cursor-halo"></div>   <!-- Halo: soft breathing ring -->
+    <div id="cursor-leaf"></div>   <!-- Outer: slow organic drift -->
+
+    <style>
+    /* ── Nature Cursor — Organic Dewdrop System ─────────────────────────────── */
+
+    /* Core dewdrop: small warm amber tear, like sunlight on a leaf */
+    #cursor-dot {
+        position: fixed; pointer-events: none; z-index: 99999;
+        width: 9px; height: 9px; border-radius: 50% 50% 50% 20%;
+        rotate: -45deg;
+        background: radial-gradient(circle at 35% 35%, #fde68a, #d97706);
+        box-shadow: 0 0 8px rgba(217,119,6,0.7), 0 2px 6px rgba(120,53,15,0.4);
+        transform: translate(-50%, -50%);
+        transition: width 0.25s ease, height 0.25s ease, background 0.3s;
+        will-change: left, top;
+    }
+
+    /* Soft halo: warm cream glow ring — breathes gently */
+    #cursor-halo {
+        position: fixed; pointer-events: none; z-index: 99998;
+        width: 28px; height: 28px; border-radius: 50%;
+        border: 1.2px solid rgba(253,230,138,0.45);
+        background: radial-gradient(circle, rgba(253,230,138,0.06) 0%, transparent 70%);
+        transform: translate(-50%, -50%);
+        animation: halo-breathe 3.2s ease-in-out infinite;
+        transition: width 0.3s ease, height 0.3s ease, border-color 0.3s;
+        will-change: left, top;
+    }
+    @keyframes halo-breathe {
+        0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+        50%       { opacity: 1.0; transform: translate(-50%, -50%) scale(1.08); }
+    }
+
+    /* Outer organic ring: slow moss-green drift, slightly elliptical for life-feel */
+    #cursor-leaf {
+        position: fixed; pointer-events: none; z-index: 99997;
+        width: 46px; height: 42px; border-radius: 50%;
+        border: 1px solid rgba(134,197,102,0.30);
+        transform: translate(-50%, -50%) rotate(0deg);
+        animation: leaf-drift 8s ease-in-out infinite alternate;
+        transition: width 0.4s ease, height 0.4s ease, border-color 0.4s;
+        will-change: left, top;
+    }
+    @keyframes leaf-drift {
+        0%   { transform: translate(-50%, -50%) rotate(-6deg) scaleX(1.0) scaleY(0.95); }
+        50%  { transform: translate(-50%, -50%) rotate( 4deg) scaleX(0.95) scaleY(1.0); }
+        100% { transform: translate(-50%, -50%) rotate(-6deg) scaleX(1.0) scaleY(0.95); }
+    }
+
+    /* ── HOVER: sunlight warmth on interactive elements ─────────────────────── */
+    body.cursor-hover #cursor-dot {
+        width: 7px; height: 7px;
+        background: radial-gradient(circle at 35% 35%, #d9f99d, #65a30d);
+        box-shadow: 0 0 12px rgba(101,163,13,0.8), 0 2px 8px rgba(54,83,20,0.5);
+        rotate: -30deg;
+    }
+    body.cursor-hover #cursor-halo {
+        width: 40px; height: 40px;
+        border-color: rgba(134,197,102,0.7);
+        background: radial-gradient(circle, rgba(134,197,102,0.08) 0%, transparent 70%);
+    }
+    body.cursor-hover #cursor-leaf {
+        width: 62px; height: 58px;
+        border-color: rgba(134,197,102,0.55);
+    }
+
+    /* ── CLICK: warm water ripple in earth tones ────────────────────────────── */
+    .cursor-ripple {
+        position: fixed; pointer-events: none; z-index: 99995;
+        width: 10px; height: 10px; border-radius: 50%;
+        border: 1.2px solid rgba(217,119,6,0.75);
+        transform: translate(-50%, -50%) scale(1);
+        animation: nature-ripple 0.8s cubic-bezier(0.1,0.7,0.3,1) forwards;
+    }
+    .cursor-ripple.r2 { animation-delay: 0.1s;  border-color: rgba(161,98,7,0.45); }
+    .cursor-ripple.r3 { animation-delay: 0.22s; border-color: rgba(120,53,15,0.25); }
+    @keyframes nature-ripple {
+        to { transform: translate(-50%, -50%) scale(5.5); opacity: 0; }
+    }
+    </style>
+
+
+    <!-- Global Background Music (Basalt and Salt) -->
+    <audio id="bgm" src="Basalt_and_Salt.mp3" loop preload="auto" style="display:none;"></audio>
+
+    <!-- Music Toggle Button (cinematic floating control) -->
+    <button id="music-btn" title="撥放/停止音樂" style="
+        position: fixed; bottom: 24px; right: 24px; z-index: 9998;
+        width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
+        background: rgba(6,180,212,0.18); backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(56,189,248,0.40);
+        box-shadow: 0 0 18px rgba(6,180,212,0.35), inset 0 0 8px rgba(56,189,248,0.1);
+        color: #7dd3fc; font-size: 1.4rem; display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s ease; animation: music-pulse 2.6s ease-in-out infinite;
+    " aria-label="音樂改變">
+        🎵
+    </button>
+
+    <style>
+    @keyframes music-pulse {
+        0%, 100% { box-shadow: 0 0 14px rgba(6,180,212,0.3), inset 0 0 6px rgba(56,189,248,0.08); }
+        50%       { box-shadow: 0 0 28px rgba(6,180,212,0.65), inset 0 0 14px rgba(56,189,248,0.2); }
+    }
+    #music-btn:hover { transform: scale(1.12); background: rgba(6,180,212,0.32); }
+    #music-btn.muted { animation: none; opacity: 0.45; }
+    </style>
+    
+    <!-- Background Layers -->
+    <div class="bg-layer lobby-anim"></div>
+    <div class="effects-container leaves-layer" style="opacity: 1;"></div>
+    <div class="effects-container fishes-layer" style="opacity: 1;"></div>
+    <div class="effects-container rain-layer" style="opacity: 0;"></div>
+    <div class="effects-container stars-layer" style="opacity: 0;"></div>
+    <div class="particles-layer"></div>
+
+    <!-- Avatar Preview Modal (click own card to open) -->
+    <div id="avatar-preview-modal" style="
+        display:none; position:fixed; inset:0; z-index:9990;
+        background:rgba(2,6,23,0.75); backdrop-filter:blur(14px);
+        align-items:center; justify-content:center;
+        animation: modal-fade-in 0.35s ease;
+    ">
+        <div style="
+            position:relative; width:340px; max-width:92vw;
+            background:rgba(10,20,40,0.88);
+            border:1px solid rgba(56,189,248,0.18);
+            border-radius:22px;
+            box-shadow: 0 0 60px rgba(6,180,212,0.18), 0 20px 60px rgba(0,0,0,0.6);
+            overflow:hidden; padding-bottom:1.2rem;
+        ">
+            <!-- Header bar -->
+            <div id="avatar-preview-header" style="
+                padding:1rem 1.4rem 0.7rem;
+                background:linear-gradient(to right, rgba(6,180,212,0.12), transparent);
+                border-bottom:1px solid rgba(255,255,255,0.06);
+                display:flex; align-items:center; justify-content:space-between;
+            ">
+                <div>
+                    <div id="avatar-preview-name" style="font-size:1.1rem;font-weight:700;color:#e2e8f0;"></div>
+                    <div id="avatar-preview-role" style="font-size:0.78rem;margin-top:2px;"></div>
+                </div>
+                <button id="avatar-preview-close" style="
+                    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+                    color:#94a3b8; border-radius:8px; padding:0.3rem 0.7rem;
+                    font-size:0.85rem; cursor:pointer; transition:all 0.2s;
+                ">✕ 關閉</button>
+            </div>
+            <!-- 3D canvas -->
+            <canvas id="avatar-preview-canvas" style="
+                display:block; width:100%; height:380px;
+                border-radius:0;
+            "></canvas>
+            <!-- Traits footer -->
+            <div id="avatar-preview-traits" style="
+                display:flex; flex-wrap:wrap; gap:0.35rem;
+                padding:0.7rem 1.2rem 0;
+                min-height:28px;
+            "></div>
+        </div>
+    </div>
+    <style>
+    @keyframes modal-fade-in {
+        from { opacity:0; transform:scale(0.96); }
+        to   { opacity:1; transform:scale(1); }
+    }
+    #avatar-preview-modal.open { display:flex; }
+    </style>
+
+    <div id="app">
+        <!-- Rules Modal -->
+        <div id="rules-modal" class="modal-overlay">
+            <div class="modal-content glass">
+                <h2>📜 遊戲規則介紹與流程</h2>
+                <div class="rules-scroll-area custom-scrollbar">
+                    <p><strong>《Avaka：島嶼的維度》</strong> 是一款關於蘭嶼傳統造船與文化選擇的多人合作與競爭遊戲。您將扮演達悟族的工匠，必須在 12 個月（回合）內完成一艘拼板舟。未在期限內完工將導致文化斷裂（失敗）。</p>
+                    
+                    <h3>🎯 核心點數與限制</h3>
+                    <ul>
+                        <li><strong>⚡ 行動點數 (AP)：</strong> 執行移動、採集、工序等都需要消耗 AP。每個月（回合）初會自動補滿。</li>
+                        <li><strong>💡 技術點數 (KP)：</strong> 代表對傳統工藝的知識。累積足夠的 KP 才能解鎖後期的傳統工序（捻線需 3 KP，填縫需 8 KP）。</li>
+                        <li><strong>⏳ 曆法限制：</strong> 遊戲依循蘭嶼的 12 個月份進行。每個月都會有獨特的氣候或禁忌（如：飛魚祭禁入山林），玩家必須靈活調整策略。</li>
+                    </ul>
+
+                    <h3>👤 角色能力介紹</h3>
+                    <ul>
+                        <li><strong>👑 資深工匠 (耆老)：</strong> 擁有 6 AP 與 10 KP。傳統技藝純熟，執行最終「填縫」不耗 AP；能遠程消耗 1 AP 指導青年獲得 KP。</li>
+                        <li><strong>🏃 青年學徒(部落青年)：</strong> 擁有充沛的 12 AP 與 0 KP。步伐輕快，移動不耗 AP；向耆老「請益」能一次獲得 3 KP。</li>
+                        <li><strong>⚖️ 協商者(中年工匠)：</strong> 擁有 8 AP 與 5 KP。擔任傳統與現代的橋樑，若購買工業材料完工，可獲得額外加分且免除扣分懲罰。</li>
+                    </ul>
+
+                    <h3>🗺️ 造船路徑流程圖</h3>
+                    <div class="css-flowchart">
+                        <div class="fc-node fc-start">開始造船</div>
+                        
+                        <div class="fc-branches">
+                            <div class="fc-branch traditional">
+                                <div class="fc-label">🌟 傳統路線 (高分)</div>
+                                <div class="fc-node">前往 🌲 山林</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node">採集素材</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node">前往 🛖 灘頭</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node">① 剝麻</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node">② 刮絲</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node">③ 捻線 (需 3 KP)</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node">④ 填縫完工 (需 8 KP + 素材)</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node fc-win">傳承成功！</div>
+                            </div>
+                            
+                            <div class="fc-branch modern">
+                                <div class="fc-label">⚠️ 現代化路線 (低分)</div>
+                                <div class="fc-node">前往 🏬 商店</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node">購買樹脂</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node fc-lose">完工，但文化流失</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>🏆 結算與傳承</h3>
+                    <p>12 個月結束後，系統會結算所有人的「文化韌性總分」。成功走完「傳統路線」將獲得 15 分以上的評價；依賴「現代路線」得分較低（中生代除外）。此外，青年學徒向耆老請益，雙方都能額外獲得傳承的分數，團隊合作才是關鍵！</p>
+                </div>
+                <button id="close-rules-btn" class="btn primary mt-4">我已經完全了解了</button>
+            </div>
+        </div>
+
+        <!-- Lore Modal -->
+        <div id="lore-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
+            <div class="modal-content glass" style="max-width: 500px;">
+                <h2 style="color:var(--secondary); margin-bottom: 0.2rem;" id="lore-title">月份名稱</h2>
+                <h4 style="color:var(--text-muted); margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;" id="lore-subtitle">【副標題】</h4>
+                <div id="lore-content" style="line-height: 1.8; color: var(--text-main); font-size: 0.95rem;">
+                    <!-- Lore content generated via JS -->
+                </div>
+                <button id="close-lore-btn" class="btn secondary outline mt-4">關閉</button>
+            </div>
+        </div>
+
+        <!-- Lobby -->
+        <div id="lobby" class="screen active">
+            <div class="lobby-card glass floating-element">
+                <div class="title-wrapper">
+                    <div class="bg-subtitle"><span>A</span><span>V</span><span>A</span><span>K</span><span>A</span></div>
+                    <div class="glow-text"><span>島</span><span>嶼</span><span>的</span><span>維</span><span>度</span></div>
+                </div>
+                
+                <div id="join-section">
+                    <div class="input-group">
+                        <input type="text" id="player-name" placeholder="輸入你的名字..." autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>選擇你的角色定位</label>
+                        <div class="role-selector">
+                            <div class="role-option selected" data-role="elder">
+                                <div class="role-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 22 12 12 22 2 12 12 2"/><circle cx="12" cy="12" r="3"/></svg>
+                                </div>
+                                <h3>資深工匠<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(耆老)</span></h3>
+                                <div class="role-badges">
+                                    <span class="badge ap-badge">AP 6</span> 
+                                    <span class="badge kp-badge">KP 10</span>
+                                </div>
+                                <small>填縫專家<br>遠程指導</small>
+                            </div>
+                            <div class="role-option" data-role="youth">
+                                <div class="role-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12 c 3 -6, 7 -6, 10 0 c 3 6, 7 6, 10 0"/></svg>
+                                </div>
+                                <h3>青年學徒<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(部落青年)</span></h3>
+                                <div class="role-badges">
+                                    <span class="badge ap-badge">AP 12</span> 
+                                    <span class="badge kp-badge">KP 0</span>
+                                </div>
+                                <small>快速移動<br>學徒請益</small>
+                            </div>
+                            <div class="role-option" data-role="middle">
+                                <div class="role-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="12" x2="20" y2="12"/><line x1="12" y1="4" x2="12" y2="20"/><circle cx="12" cy="12" r="4"/></svg>
+                                </div>
+                                <h3>協商者<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(中年工匠)</span></h3>
+                                <div class="role-badges">
+                                    <span class="badge ap-badge">AP 8</span> 
+                                    <span class="badge kp-badge">KP 5</span>
+                                </div>
+                                <small>適應現代<br>無工業懲罰</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group" style="text-align: center; margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                        <input type="text" id="room-code" placeholder="輸入 4 碼序號" autocomplete="off" maxlength="4" style="text-transform: uppercase; text-align:center; font-size:1.2rem; letter-spacing:2px; max-width:250px; margin: 0 auto; display:block;">
+                        <div style="display:flex; gap:10px; justify-content:center; margin-top:1rem; max-width: 280px; margin-left:auto; margin-right:auto;">
+                            <button id="join-btn" class="btn primary pulse-btn" style="flex:1; padding: 0.8rem;">加入房間</button>
+                            <button id="create-btn" class="btn secondary outline" style="flex:1; padding: 0.8rem;">自己開新房</button>
+                        </div>
+                    </div>
+                    <button id="open-rules-btn" class="btn outline mt-4" style="width:100%; border-color:transparent; text-decoration:underline;">查看遊戲規則與流程</button>
+                </div>
+
+                <div id="waiting-section" style="display: none;">
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">等候大廳</h2>
+                    <div style="background:rgba(0,0,0,0.3); padding:0.8rem 1.5rem; border-radius:12px; display:inline-block; margin-bottom:1rem; border:1px solid var(--secondary);">
+                        <span style="font-size:0.9rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">專屬房間代碼</span>
+                        <strong id="display-room-code" style="color:var(--secondary); font-size:2rem; letter-spacing:0.3em; text-shadow: 0 0 10px rgba(212,175,55,0.5);">ABCD</strong>
+                    </div>
+                    <p style="color: var(--text-muted); margin-bottom: 1rem;">請將上方的代碼分享給好友，讓他們輸入以加入此遊戲！</p>
+                    <div id="lobby-players-list" class="lobby-players"></div>
+                    <div class="button-group-vertical mt-4">
+                        <button id="start-game-btn" class="btn primary">開始遊戲</button>
+                        <button id="leave-lobby-btn" class="btn danger">退出房間</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar Creator 3D -->
+        <div id="avatar-screen" class="screen">
+            <div class="lobby-card glass floating-element" style="max-width: 920px; margin: 0 auto; margin-top: 2vh; padding: 1.5rem; position: relative;">
+                <h2 style="color:var(--secondary); margin-bottom: 0.25rem; font-size: 1.5rem; text-align: center;">✨ 創建你的專屬 3D 角色</h2>
+                <p id="avatar-role-name-label" style="color:var(--text-muted); margin-bottom: 1rem; text-align: center; font-size: 0.9rem;"></p>
+                
+                <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                    <!-- 3D Canvas Preview -->
+                    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+                        <canvas id="avatar-canvas" style="width: 100%; aspect-ratio: 3/4; border-radius: 14px; background: linear-gradient(160deg, #0a0f1e, #1e293b); display: block; cursor: grab; box-shadow: 0 0 30px rgba(56,189,248,0.1); border: 1px solid rgba(255,255,255,0.05);"></canvas>
+                        <p style="text-align:center; color:var(--text-muted); font-size:0.75rem; margin-top:0.4rem;">🖱 拖曳旋轉 · 滾輪縮放</p>
+                    </div>
+                    
+                    <!-- Controls -->
+                    <div id="avatar-controls" style="flex: 1.3; display: flex; flex-direction: column; gap: 0.9rem; max-height: 66vh; overflow-y: auto; padding-right: 0.3rem;">
+                        <!-- Skin -->
+                        <div class="avatar-ctrl-group">
+                            <label class="avatar-ctrl-label">🎨 膚色</label>
+                            <div class="avatar-swatch-row" data-ctrl="skin">
+                                <button class="swatch" data-val="#C68642" style="background:#C68642;" title="標準膚色"></button>
+                                <button class="swatch selected" data-val="#A0622A" style="background:#A0622A;" title="深古銅色"></button>
+                                <button class="swatch" data-val="#8D5524" style="background:#8D5524;" title="深棕色"></button>
+                                <button class="swatch" data-val="#6B3F1F" style="background:#6B3F1F;" title="深色"></button>
+                            </div>
+                        </div>
+                        <!-- Hair Style -->
+                        <div class="avatar-ctrl-group">
+                            <label class="avatar-ctrl-label">💇 髮型</label>
+                            <div class="avatar-btn-row" data-ctrl="hair">
+                                <button class="avatar-opt selected" data-val="short">短直髮</button>
+                                <button class="avatar-opt" data-val="long">長直髮</button>
+                                <button class="avatar-opt" data-val="bun">束髻</button>
+                                <button class="avatar-opt" data-val="bald">光頭</button>
+                            </div>
+                        </div>
+                        <!-- Hair Color (Tao: mostly black) -->
+                        <div class="avatar-ctrl-group">
+                            <label class="avatar-ctrl-label">🪮 髮色</label>
+                            <div class="avatar-swatch-row" data-ctrl="hairColor">
+                                <button class="swatch selected" data-val="#0d0d0d" style="background:#0d0d0d;" title="烏黑（達悟族傳統）"></button>
+                                <button class="swatch" data-val="#2a1a0a" style="background:#2a1a0a;" title="深棕黑"></button>
+                                <button class="swatch" data-val="#5a3a1a" style="background:#5a3a1a;" title="棕色"></button>
+                                <button class="swatch" data-val="#c8c8c8" style="background:#c8c8c8; border:1px solid #777;" title="銀白（耆老）"></button>
+                            </div>
+                        </div>
+                        <!-- Eye Color -->
+                        <div class="avatar-ctrl-group">
+                            <label class="avatar-ctrl-label">👁 瞳孔顏色</label>
+                            <div class="avatar-swatch-row" data-ctrl="eye">
+                                <button class="swatch selected" data-val="#2a1a08" style="background:#2a1a08;" title="深棕（最常見）"></button>
+                                <button class="swatch" data-val="#4a2e10" style="background:#4a2e10;" title="棕色"></button>
+                                <button class="swatch" data-val="#7a4820" style="background:#7a4820;" title="琥珀棕"></button>
+                                <button class="swatch" data-val="#1a1a1a" style="background:#1a1a1a;" title="深黑"></button>
+                            </div>
+                        </div>
+                        <!-- Face -->
+                        <div class="avatar-ctrl-group">
+                            <label class="avatar-ctrl-label">👤 臉型</label>
+                            <div class="avatar-btn-row" data-ctrl="face">
+                                <button class="avatar-opt selected" data-val="round">圓潤臉</button>
+                                <button class="avatar-opt" data-val="square">寬顎臉</button>
+                                <button class="avatar-opt" data-val="slim">清秀臉</button>
+                            </div>
+                        </div>
+                        <!-- Tao Accessories (research-based) -->
+                        <div class="avatar-ctrl-group">
+                            <label class="avatar-ctrl-label">🛡 達悟族禮儀配件</label>
+                            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.5rem; line-height:1.5;">僅祭典（飛魚祭、大船下水）時配戴</div>
+                            <div class="avatar-btn-row" data-ctrl="accessory">
+                                <button class="avatar-opt selected" data-val="none">無</button>
+                                <button class="avatar-opt" data-val="silver_helmet" title="銀盔：達悟族最神聖禮器，銀片打造成圓錐狀">銀盔</button>
+                                <button class="avatar-opt" data-val="rattan_armor" title="藤甲：由省藤編織，祭典時穿戴防身">藤甲</button>
+                                <button class="avatar-opt" data-val="chest_ornament" title="半月形胸飾：象徵社會地位與成就">胸飾</button>
+                            </div>
+                        </div>
+                        <!-- Tao Clothing -->
+                        <div class="avatar-ctrl-group">
+                            <label class="avatar-ctrl-label">👕 達悟族服飾</label>
+                            <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:0.5rem; line-height:1.5;">傳統以白、黑、藍色為主，忌用鮮豔色彩</div>
+                            <div class="avatar-btn-row" data-ctrl="cloth">
+                                <button class="avatar-opt selected" data-val="loincloth">丁字褲</button>
+                                <button class="avatar-opt" data-val="vest_dark">黑白背心</button>
+                                <button class="avatar-opt" data-val="ceremony">祭典全裝</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button id="avatar-back-btn" class="btn outline" style="flex: 1;">返回</button>
+                    <button id="avatar-confirm-btn" class="btn primary glow-btn" style="flex: 2;">✅ 確認並進入房間</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game -->
+        <div id="game" class="screen">
+            <header class="glass">
+                <div class="month-info">
+                    <div id="month-badge" class="month-badge">第 <span id="current-month">1</span> 個月</div>
+                    <div class="month-details">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2 id="month-name">月份名稱</h2>
+                            <button id="open-lore-btn" class="btn secondary outline" style="padding: 0.1rem 0.6rem; font-size: 0.8rem; height: auto;">📖 夜曆細節</button>
+                        </div>
+                        <p id="month-desc">月份規則說明</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="next-month-btn" class="btn primary">進入下個月</button>
+                    <button id="leave-game-btn" class="btn danger outline">退出遊戲</button>
+                </div>
+            </header>
+
+            <div class="main-layout">
+                <aside class="sidebar glass">
+                    <h3>👥 部落工匠狀態</h3>
+                    <div id="players-list"></div>
+                </aside>
+
+                <div class="content-area" style="display: flex; flex-direction: column; gap: 1.5rem; flex: 1;">
+                    <main class="map-area">
+                    <div class="location-card glass" data-loc="山林">
+                        <div class="loc-header">
+                            <h3>🌲 山林</h3>
+                            <span class="badge">資源區</span>
+                        </div>
+                        <p class="desc">採集 Avaka與蘭嶼花椒的區域</p>
+                        <div class="players-here"></div>
+                        <div class="action-grid">
+                            <button class="btn action-btn move-btn">移動至此 (1 AP)</button>
+                            <button class="btn action-btn gather-btn">採集資源 (2 AP)</button>
+                        </div>
+                    </div>
+
+                    <div class="location-card glass" data-loc="灘頭工作室">
+                        <div class="loc-header">
+                            <h3>🛖 灘頭工作室</h3>
+                            <span class="badge primary-badge">工藝核心</span>
+                        </div>
+                        <p class="desc">造船工序的執行區域，充滿傳統智慧與汗水</p>
+                        <div class="players-here"></div>
+                        <div class="action-grid craft-grid">
+                            <button class="btn action-btn move-btn">移動至此 (1 AP)</button>
+                            <button class="btn action-btn craft-btn" data-step="peel">① 剝麻 (2 AP)</button>
+                            <button class="btn action-btn craft-btn" data-step="scrape">② 刮絲 (2 AP)</button>
+                            <button class="btn action-btn craft-btn" data-step="twine">③ 捻線 (2 AP | 需 3 KP)</button>
+                            <button class="btn action-btn craft-btn" data-step="caulk">④ 填縫完工 (2 AP | 需 8 KP + 材料)</button>
+                        </div>
+                    </div>
+
+                    <div class="location-card glass" data-loc="商店">
+                        <div class="loc-header">
+                            <h3>🏬 現代化商店</h3>
+                            <span class="badge danger-badge">工業區</span>
+                        </div>
+                        <p class="desc">購買快速但會造成文化斷裂的工業材料</p>
+                        <div class="players-here"></div>
+                        <div class="action-grid">
+                            <button class="btn action-btn move-btn">移動至此 (1 AP)</button>
+                            <button class="btn action-btn buy-btn">購買工業樹脂直接完工 (2 AP)</button>
+                        </div>
+                    </div>
+                </main>
+
+                    <!-- Avaka Cinematic Title Animation Panel -->
+                    <div class="glass" style="
+                        border-radius: 14px; overflow: hidden; position: relative;
+                        height: 240px; flex-shrink: 0;
+                        border: 1px solid rgba(56,189,248,0.15);
+                        box-shadow: 0 0 20px rgba(6,180,212,0.12);
+                    ">
+                        <video id="title-video" src="avaka_title.mp4"
+                            autoplay loop muted playsinline
+                            style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px;">
+                        </video>
+                        <!-- Subtle overlay gradient to blend with game theme -->
+                        <div style="
+                            position:absolute; inset:0; pointer-events:none;
+                            background: linear-gradient(to right,
+                                rgba(6,13,26,0.38) 0%,
+                                transparent 40%,
+                                transparent 60%,
+                                rgba(6,13,26,0.38) 100%);
+                            border-radius:14px;
+                        "></div>
+                        <!-- Video mute/unmute toggle -->
+                        <button id="title-video-mute-btn" title="影片聲音" style="
+                            position:absolute; bottom:8px; right:10px;
+                            background:rgba(6,13,26,0.55); border:1px solid rgba(56,189,248,0.3);
+                            color:#7dd3fc; border-radius:6px; padding:2px 7px; font-size:0.75rem;
+                            cursor:pointer; backdrop-filter:blur(6px);
+                        ">🔇</button>
+                    </div>
+
+                    <aside class="logs-panel glass" style="display: flex; flex-direction: row; gap: 1.5rem; height: 350px;">
+                        <div class="sys-logs" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                            <h3>📜 部落記事</h3>
+                            <div id="logs" class="custom-scrollbar" style="flex: 1; overflow-y: auto;"></div>
+                        </div>
+                        
+                        <div class="chat-section" style="flex: 1; display: flex; flex-direction: column; min-height: 0; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1.5rem;">
+                            <h3>💬 部落頻道</h3>
+                            <div id="chat-messages" class="custom-scrollbar" style="flex: 1; overflow-y: auto; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.5rem;"></div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="chat-input" autocomplete="off" placeholder="與島民交流..." style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); padding: 0.5rem; border-radius: 6px; outline: none;">
+                                <button id="chat-send-btn" class="btn primary" style="padding: 0 1rem; margin-top: 0;">傳送</button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+            
+            <!-- Bottom Player Actions -->
+            <div class="player-actions glass">
+                <div id="my-status"></div>
+                <div class="special-actions">
+                    <button id="ask-btn" class="btn action-btn glow-btn" style="display:none;">🙏 向耆老請益 (2 AP -> 獲 3 KP)</button>
+                    <div id="teach-container" style="display:none;" class="teach-box">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">選擇青年</span>
+                        <select id="teach-target" class="custom-select"></select>
+                        <button id="teach-btn" class="btn action-btn glow-btn">💡 遠程指導 (1 AP -> 他人獲 1 KP)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="avatar3d.js"></script>
+    <script src="app.js"></script>
+    <script>
+    // ── Avaka BGM Controller ──────────────────────────────────────────────────
+    (function () {
+        const bgm = document.getElementById('bgm');
+        const btn = document.getElementById('music-btn');
+        if (!bgm || !btn) return;
+        bgm.volume = 0;
+        function fadeIn(target = 0.55, duration = 2500) {
+            const step = target / (duration / 50);
+            const iv = setInterval(() => {
+                if (bgm.volume + step >= target) { bgm.volume = target; clearInterval(iv); }
+                else bgm.volume += step;
+            }, 50);
+        }
+        function tryPlay() {
+            bgm.play().then(() => { fadeIn(); btn.textContent = '🎵'; btn.classList.remove('muted'); }).catch(() => {});
+        }
+        tryPlay();
+        let started = false;
+        document.addEventListener('click', () => { if (!started && bgm.paused) { started = true; tryPlay(); } });
+        let muted = false;
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bgm.paused) { tryPlay(); muted = false; } else { bgm.pause(); muted = true; }
+            btn.textContent = muted ? '🔇' : '🎵';
+            btn.classList.toggle('muted', muted);
+        });
+    })();
+
+    // ── Title Video Mute Toggle ───────────────────────────────────────────────
+    (function () {
+        const vid = document.getElementById('title-video');
+        const muteBtn = document.getElementById('title-video-mute-btn');
+        if (!vid || !muteBtn) return;
+        muteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            vid.muted = !vid.muted;
+            muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+        });
+    })();
+
+    // ── Nature Cursor Controller ──────────────────────────────────────────────
+    (function () {
+        const dot  = document.getElementById('cursor-dot');
+        const halo = document.getElementById('cursor-halo');
+        const leaf = document.getElementById('cursor-leaf');
+        if (!dot) return;
+        let mx = -300, my = -300;
+        let hx = -300, hy = -300;
+        let lx = -300, ly = -300;
+        document.addEventListener('mousemove', e => {
+            mx = e.clientX; my = e.clientY;
+            dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+        });
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        (function loop() {
+            hx = lerp(hx, mx, 0.18); hy = lerp(hy, my, 0.18);
+            if (halo) { halo.style.left = hx + 'px'; halo.style.top = hy + 'px'; }
+            lx = lerp(lx, mx, 0.09); ly = lerp(ly, my, 0.09);
+            if (leaf) { leaf.style.left = lx + 'px'; leaf.style.top = ly + 'px'; }
+            requestAnimationFrame(loop);
+        })();
+        const HOVER_SELS = 'a, button, input, select, textarea, [role="button"], label, .role-option, .swatch, .avatar-opt, .location-card';
+        document.addEventListener('mouseover', e => { if (e.target.closest(HOVER_SELS)) document.body.classList.add('cursor-hover'); });
+        document.addEventListener('mouseout',  e => { if (e.target.closest(HOVER_SELS)) document.body.classList.remove('cursor-hover'); });
+        document.addEventListener('mousedown', e => {
+            ['', 'r2', 'r3'].forEach((cls, i) => {
+                const r = document.createElement('div');
+                r.className = 'cursor-ripple ' + cls;
+                r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px';
+                document.body.appendChild(r);
+                setTimeout(() => r.remove(), 900 + i * 120);
+            });
+        });
+        const allLayers = [dot, halo, leaf].filter(Boolean);
+        document.addEventListener('mouseleave', () => allLayers.forEach(el => el.style.opacity = '0'));
+        document.addEventListener('mouseenter', () => allLayers.forEach(el => el.style.opacity = '1'));
+    })();
+    </script>
+</body>
+</html>
