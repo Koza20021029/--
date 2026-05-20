@@ -822,3 +822,29 @@ header {
     font-weight: 500;
     opacity: 0.9;
 }
+
+/* Light Rays background container */
+.light-rays-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -2; /* Above bg-layer but behind other layers */
+    overflow: hidden;
+}
+
+/* Prismatic Burst background container */
+.prismatic-burst-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -2; /* Placed above bg-layer but behind other layers */
+    overflow: hidden;
+}
+
+

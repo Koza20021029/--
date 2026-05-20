@@ -53,6 +53,8 @@ let myId = null;
 let currentDisplayedMonth = 0;
 let pendingRoomAction = null;
 let currentAvatarSelections = {};
+let lightRaysInstance = null;
+let prismaticBurstInstance = null;
 
 const AVATAR_ROLE_LABELS = {
     elder: '資深工匠 — 為你的角色打造專屬外型',
@@ -171,6 +173,24 @@ roleOptions.forEach(opt => {
 
 // Join & Create
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize LightRays shader background
+    const lightRaysCanvas = document.getElementById('light-rays-canvas');
+    if (lightRaysCanvas && window.LightRaysShader) {
+        lightRaysInstance = new LightRaysShader(lightRaysCanvas, {
+            raysOrigin: 'top-center',
+            raysColor: '#fde68a', // Gorgeous warm golden sunlight for the lobby
+            raysSpeed: 0.8,
+            lightSpread: 1.2,
+            rayLength: 2.5,
+            pulsating: true,
+            fadeDistance: 1.0,
+            saturation: 1.0,
+            followMouse: true,
+            mouseInfluence: 0.15,
+            distortion: 0.08
+        });
+    }
+
     // Background Effects Spawners
     function spawnLeaf() {
         const layer = document.querySelector('.leaves-layer');
@@ -365,6 +385,10 @@ socket.on('state_update', (state) => {
 
     if (!state.started) {
         // Lobby state
+        if (prismaticBurstInstance) {
+            prismaticBurstInstance.destroy();
+            prismaticBurstInstance = null;
+        }
         lobbyScreen.classList.add('active');
         gameScreen.classList.remove('active');
         avatarScreen.classList.remove('active');
@@ -589,6 +613,16 @@ playersListEl.addEventListener('click', (e) => {
 });
 
 function renderLobby(state) {
+    if (lightRaysInstance) {
+        lightRaysInstance.updateConfig({
+            raysColor: '#fde68a',
+            raysSpeed: 0.8,
+            lightSpread: 1.2,
+            rayLength: 2.5,
+            distortion: 0.08
+        });
+    }
+
     document.querySelector('.bg-layer').classList.add('lobby-anim'); 
     document.querySelector('.bg-layer').style.filter = 'none'; 
     document.querySelector('.bg-layer').style.backgroundPosition = ''; // Clear inline styles
@@ -640,18 +674,18 @@ function renderLobby(state) {
 
 const monthThemes = [
     null, // 0
-    { pos: '0% 0%', hue: 0, bright: 1.1, leaves: 1, fishes: 0, rain: 0, stars: 0 }, // M1: Kashyman - 準備月 (綠, 葉子)
-    { pos: '0% 10%', hue: 15, bright: 1.05, leaves: 1, fishes: 0, rain: 0, stars: 0 }, // M2: Kapowan - 禁山林 (深綠)
-    { pos: '0% 20%', hue: 30, bright: 1.0, leaves: 0, fishes: 1, rain: 0, stars: 0 }, // M3: Pikaokaod - 飛魚盛期 (藍綠, 飛魚)
-    { pos: '0% 40%', hue: 45, bright: 1.0, leaves: 0, fishes: 1, rain: 0, stars: 0 }, // M4: Papataw - 鬼頭刀 (淺海, 飛魚)
-    { pos: '0% 60%', hue: 60, bright: 0.8, leaves: 0, fishes: 1, rain: 1, stars: 0 }, // M5: Pipilapila - 梅雨季 (暗海, 大雨)
-    { pos: '0% 80%', hue: 75, bright: 0.95, leaves: 0, fishes: 1, rain: 0, stars: 0 }, // M6: Apiya vehan - 好月節 (湛藍)
-    { pos: '0% 100%', hue: 90, bright: 0.9, leaves: 0, fishes: 0, rain: 0.3, stars: 0 }, // M7: Pehhakow - 飛魚季結束 (深藍, 微雨)
-    { pos: '0% 100%', hue: 120, bright: 0.85, leaves: 0, fishes: 0, rain: 0, stars: 0.5 }, // M8: Pitanatana - 土器月 (寂靜深淵, 微星芒)
-    { pos: '0% 80%', hue: 200, bright: 0.8, leaves: 0, fishes: 0, rain: 0, stars: 1 }, // M9: Kalimman - 終食祭 (秋夜星空, 紅/紫)
-    { pos: '0% 50%', hue: 280, bright: 0.8, leaves: 0, fishes: 0, rain: 0, stars: 0.5 }, // M10: Kaneman - 不吉祥月 (暮色)
-    { pos: '0% 20%', hue: 320, bright: 0.9, leaves: 1, fishes: 0, rain: 0, stars: 0 }, // M11: Kapitowan - 祭神 (微芒, 落葉回歸)
-    { pos: '0% 0%', hue: 350, bright: 1.0, leaves: 1, fishes: 0, rain: 0, stars: 0 }  // M12: Kaowan - 手工藝月 (初春)
+    { pos: '0% 0%', hue: 0, bright: 1.1, leaves: 1, fishes: 0, rain: 0, stars: 0, raysColor: '#bbf7d0', raysSpeed: 0.8, lightSpread: 1.2, rayLength: 2.5, distortion: 0.08 }, // M1: Kashyman - 準備月 (綠, 葉子)
+    { pos: '0% 10%', hue: 15, bright: 1.05, leaves: 1, fishes: 0, rain: 0, stars: 0, raysColor: '#34d399', raysSpeed: 0.6, lightSpread: 1.0, rayLength: 2.2, distortion: 0.06 }, // M2: Kapowan - 禁山林 (深綠)
+    { pos: '0% 20%', hue: 30, bright: 1.0, leaves: 0, fishes: 1, rain: 0, stars: 0, raysColor: '#22d3ee', raysSpeed: 0.9, lightSpread: 1.4, rayLength: 2.6, distortion: 0.1 }, // M3: Pikaokaod - 飛魚盛期 (藍綠, 飛魚)
+    { pos: '0% 40%', hue: 45, bright: 1.0, leaves: 0, fishes: 1, rain: 0, stars: 0, raysColor: '#0ea5e9', raysSpeed: 1.0, lightSpread: 1.5, rayLength: 2.7, distortion: 0.12 }, // M4: Papataw - 鬼頭刀 (淺海, 飛魚)
+    { pos: '0% 60%', hue: 60, bright: 0.8, leaves: 0, fishes: 1, rain: 1, stars: 0, raysColor: '#475569', raysSpeed: 0.4, lightSpread: 0.8, rayLength: 1.8, distortion: 0.15 }, // M5: Pipilapila - 梅雨季 (暗海, 大雨)
+    { pos: '0% 80%', hue: 75, bright: 0.95, leaves: 0, fishes: 1, rain: 0, stars: 0, raysColor: '#60a5fa', raysSpeed: 0.7, lightSpread: 1.2, rayLength: 2.4, distortion: 0.08 }, // M6: Apiya vehan - 好月節 (湛藍)
+    { pos: '0% 100%', hue: 90, bright: 0.9, leaves: 0, fishes: 0, rain: 0.3, stars: 0, raysColor: '#38bdf8', raysSpeed: 0.8, lightSpread: 1.3, rayLength: 2.5, distortion: 0.09 }, // M7: Pehhakow - 飛魚季結束 (深藍, 微雨)
+    { pos: '0% 100%', hue: 120, bright: 0.85, leaves: 0, fishes: 0, rain: 0, stars: 0.5, raysColor: '#a855f7', raysSpeed: 0.5, lightSpread: 1.0, rayLength: 2.0, distortion: 0.07 }, // M8: Pitanatana - 土器月 (寂靜深淵, 微星芒)
+    { pos: '0% 80%', hue: 200, bright: 0.8, leaves: 0, fishes: 0, rain: 0, stars: 1, raysColor: '#ec4899', raysSpeed: 0.6, lightSpread: 1.1, rayLength: 2.1, distortion: 0.08 }, // M9: Kalimman - 終食祭 (秋夜星空, 紅/紫)
+    { pos: '0% 50%', hue: 280, bright: 0.8, leaves: 0, fishes: 0, rain: 0, stars: 0.5, raysColor: '#f97316', raysSpeed: 0.5, lightSpread: 0.9, rayLength: 1.9, distortion: 0.09 }, // M10: Kaneman - 不吉祥月 (暮色)
+    { pos: '0% 20%', hue: 320, bright: 0.9, leaves: 1, fishes: 0, rain: 0, stars: 0, raysColor: '#fbbf24', raysSpeed: 0.7, lightSpread: 1.2, rayLength: 2.3, distortion: 0.08 }, // M11: Kapitowan - 祭神 (微芒, 落葉回歸)
+    { pos: '0% 0%', hue: 350, bright: 1.0, leaves: 1, fishes: 0, rain: 0, stars: 0, raysColor: '#fef08a', raysSpeed: 0.9, lightSpread: 1.3, rayLength: 2.6, distortion: 0.07 }  // M12: Kaowan - 手工藝月 (初春)
 ];
 
 function updateBackgroundForMonth(month) {
@@ -672,6 +706,16 @@ function updateBackgroundForMonth(month) {
     if (fishesLayer) fishesLayer.style.opacity = s.fishes;
     if (rainLayer) rainLayer.style.opacity = s.rain;
     if (starsLayer) starsLayer.style.opacity = s.stars;
+
+    if (lightRaysInstance && s.raysColor) {
+        lightRaysInstance.updateConfig({
+            raysColor: s.raysColor,
+            raysSpeed: s.raysSpeed !== undefined ? s.raysSpeed : 1.0,
+            lightSpread: s.lightSpread !== undefined ? s.lightSpread : 1.0,
+            rayLength: s.rayLength !== undefined ? s.rayLength : 2.0,
+            distortion: s.distortion !== undefined ? s.distortion : 0.08
+        });
+    }
 }
 
 function renderGame(state) {
@@ -853,12 +897,22 @@ function renderGame(state) {
 }
 
 function renderGameOver(state) {
-    document.body.innerHTML = `
-        <div class="bg-layer"></div>
-        <div class="effects-container leaves-layer"></div>
-        <div class="effects-container fishes-layer"></div>
-        <div class="particles-layer"></div>
-        <div class="screen active" style="align-items:center; justify-content:center; overflow-y:auto; padding:2rem 0;">
+    const appEl = document.getElementById('app');
+    if (!appEl) return;
+
+    if (lightRaysInstance) {
+        lightRaysInstance.destroy();
+        lightRaysInstance = null;
+    }
+
+    if (prismaticBurstInstance) {
+        prismaticBurstInstance.destroy();
+        prismaticBurstInstance = null;
+    }
+
+    appEl.innerHTML = `
+        <canvas id="prismatic-burst-canvas" class="prismatic-burst-container"></canvas>
+        <div class="screen active" style="align-items:center; justify-content:center; overflow-y:auto; padding:2rem 0; min-height:100vh;">
             <div class="glass" style="padding: 2rem; text-align:center; max-width: 800px; width: 90%; position:relative; z-index:10; margin: auto;">
                 <h1 style="font-family: 'Noto Serif TC', serif; font-weight: 900; font-size: 2.5rem; color:var(--primary); margin-bottom: 2rem; letter-spacing:0.15em; text-shadow: 0 0 20px rgba(139, 195, 74, 0.4);">結算：文化韌性</h1>
                 <div style="text-align:left; margin-bottom: 2rem; display:flex; flex-direction:column; gap:1.5rem;">
@@ -884,6 +938,21 @@ function renderGameOver(state) {
             </div>
         </div>
     `;
+
+    setTimeout(() => {
+        const canvas = document.getElementById('prismatic-burst-canvas');
+        if (canvas && window.PrismaticBurstShader) {
+            prismaticBurstInstance = new PrismaticBurstShader(canvas, {
+                intensity: 2.5,
+                speed: 0.35,
+                animationType: 'rotate3d',
+                colors: ['#064e3b', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d4af37'], // 深林綠 → 翠綠 → 薄荷 → 暖金
+                distort: 4.0,
+                rayCount: 5,
+                noiseAmount: 0.7
+            });
+        }
+    }, 50);
 }
 
 function getRoleName(role) {
