@@ -96,35 +96,56 @@ const scriptEvents = {
     }
 };
 
+const GAME_RULES = [
+    {name: "Kashyman", desc: "準備月: 移動不消耗 AP。"},
+    {name: "Kapowan", desc: "飛魚禁令: 禁止進入山林，無法採集。"},
+    {name: "Pikaokaod", desc: "捕撈飛魚盛期: 在灘頭執行工序 AP 消耗減 1。"},
+    {name: "Papataw", desc: "男人勤於出海: 請益消耗 AP 加倍 (需 4 AP)。"},
+    {name: "Pipilapila", desc: "梅雨季節: 請注意 AP 管理。"},
+    {name: "Apiya vehan", desc: "好月節: 執行填縫額外 +2 分。"},
+    {name: "Pehhakow", desc: "解禁重啟: 山林開放，採集獲 2 份材料。"},
+    {name: "Pitanatana", desc: "土器月: 科學轉譯必成功 (可維修獎勵)。"},
+    {name: "Kalimman", desc: "飛魚終食祭: 商店材料價格加倍。"},
+    {name: "Kaneman", desc: "禁忌之月: 無法執行完工 (填縫)。"},
+    {name: "Kapitowan", desc: "祭神月: 青年與耆老同區域，KP 自動 +2。"},
+    {name: "Kaowan", desc: "手工藝月: 捻線不再消耗 AP。"}
+];
+
 function showMonthEventModal(month) {
     const ev = scriptEvents[month];
-    if (!ev) return;
+    const rule = GAME_RULES[month - 1];
+    if (!rule) return;
     
     const modal = document.createElement('div');
     modal.className = 'modal-overlay active';
     modal.style.zIndex = '3000';
     
+    let title = ev ? ev.title : `第 ${month} 個月：${rule.name}`;
+    let desc = ev ? ev.desc : `【本月規則】\n${rule.desc}`;
+    
     let html = `
         <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem; text-align: left; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
-            <h2 style="color:var(--secondary); font-size: 1.8rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem;">${ev.title}</h2>
+            <h2 style="color:var(--secondary); font-size: 1.8rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem;">${title}</h2>
             <div style="display:flex; flex-direction:column; gap: 1rem; margin-bottom: 2rem;">
     `;
     
-    ev.dialogues.forEach(d => {
-        const isSys = d.role === '系統';
-        const color = isSys ? 'var(--text-muted)' : (d.role === '青年學徒(部落青年)' ? '#4CAF50' : (d.role === '耆老' ? '#FFC107' : '#03A9F4'));
-        html += `
-            <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border-left: 4px solid ${color};">
-                <strong style="color: ${color}; display: block; margin-bottom: 0.3rem;">${d.role}</strong>
-                <span style="line-height: 1.6;">${d.text}</span>
-            </div>
-        `;
-    });
+    if (ev && ev.dialogues) {
+        ev.dialogues.forEach(d => {
+            const isSys = d.role === '系統';
+            const color = isSys ? 'var(--text-muted)' : (d.role === '青年學徒(部落青年)' ? '#4CAF50' : (d.role === '耆老' ? '#FFC107' : '#03A9F4'));
+            html += `
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border-left: 4px solid ${color};">
+                    <strong style="color: ${color}; display: block; margin-bottom: 0.3rem;">${d.role}</strong>
+                    <span style="line-height: 1.6;">${d.text}</span>
+                </div>
+            `;
+        });
+    }
     
     html += `
             </div>
             <div style="background: rgba(244, 67, 54, 0.1); border: 1px solid var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
-                <p style="color: #ffcdd2; font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">${ev.desc}</p>
+                <p style="color: #ffcdd2; font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">${desc}</p>
             </div>
             <button class="btn primary glow-btn" style="width: 100%;" onclick="this.closest('.modal-overlay').remove()">我明白了</button>
         </div>
@@ -462,39 +483,96 @@ function sendAction(data) {
     disableActionButtonsTemporarily();
 }
 
+function playActionSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+}
+
+function showFloatingIcon(e, icon) {
+    if (!e) return;
+    const el = document.createElement('div');
+    el.textContent = icon;
+    el.style.position = 'fixed';
+    el.style.left = `${e.clientX}px`;
+    el.style.top = `${e.clientY}px`;
+    el.style.transform = 'translate(-50%, -50%)';
+    el.style.fontSize = '2.2rem';
+    el.style.pointerEvents = 'none';
+    el.style.zIndex = '99999';
+    el.style.opacity = '1';
+    el.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+    el.style.textShadow = '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(100,200,255,0.5)';
+    document.body.appendChild(el);
+    
+    requestAnimationFrame(() => {
+        el.style.transform = 'translate(-50%, -120px) scale(1.4)';
+        el.style.opacity = '0';
+    });
+    
+    setTimeout(() => el.remove(), 800);
+}
+
 // Action bindings
 document.querySelectorAll('.move-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
+        playActionSound();
+        showFloatingIcon(e, '🚶');
         const loc = e.target.closest('.location-card').dataset.loc;
         sendAction({ type: 'move', target: loc });
     });
 });
 
-document.querySelector('.gather-btn').addEventListener('click', () => {
+document.querySelector('.gather-btn').addEventListener('click', (e) => {
+    playActionSound();
+    showFloatingIcon(e, '🌿');
     sendAction({ type: 'gather' });
 });
 
 document.querySelectorAll('.craft-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
+        playActionSound();
+        showFloatingIcon(e, '🔨');
         const step = e.target.dataset.step;
         sendAction({ type: 'craft', step });
     });
 });
 
-document.querySelector('.buy-btn').addEventListener('click', () => {
+document.querySelector('.buy-btn').addEventListener('click', (e) => {
+    playActionSound();
+    showFloatingIcon(e, '💰');
     sendAction({ type: 'buy' });
 });
 
-nextMonthBtn.addEventListener('click', () => {
+nextMonthBtn.addEventListener('click', (e) => {
+    playActionSound();
+    showFloatingIcon(e, '⏳');
     disableActionButtonsTemporarily();
     socket.emit('toggle_ready');
 });
 
-askBtn.addEventListener('click', () => {
+askBtn.addEventListener('click', (e) => {
+    playActionSound();
+    showFloatingIcon(e, '🙏');
     sendAction({ type: 'ask' });
 });
 
-teachBtn.addEventListener('click', () => {
+teachBtn.addEventListener('click', (e) => {
+    playActionSound();
+    showFloatingIcon(e, '💡');
     const targetId = teachTargetSelect.value;
     if(targetId) {
         sendAction({ type: 'teach', target_id: targetId });
@@ -503,6 +581,8 @@ teachBtn.addEventListener('click', () => {
 
 playersListEl.addEventListener('click', (e) => {
     if (e.target.classList.contains('give-btn')) {
+        playActionSound();
+        showFloatingIcon(e, '🎁');
         const targetId = e.target.dataset.id;
         sendAction({ type: 'give', target_id: targetId });
     }
@@ -606,23 +686,8 @@ function renderGame(state) {
     monthEl.textContent = state.month;
     updateBackgroundForMonth(state.month);
 
-    const rules = [
-        {name: "Kashyman", desc: "準備月: 移動不消耗 AP。"},
-        {name: "Kapowan", desc: "飛魚禁令: 禁止進入山林，無法採集。"},
-        {name: "Pikaokaod", desc: "捕撈飛魚盛期: 在灘頭執行工序 AP 消耗減 1。"},
-        {name: "Papataw", desc: "男人勤於出海: 請益消耗 AP 加倍 (需 4 AP)。"},
-        {name: "Pipilapila", desc: "梅雨季節: 請注意 AP 管理。"},
-        {name: "Apiya vehan", desc: "好月節: 執行填縫額外 +2 分。"},
-        {name: "Pehhakow", desc: "解禁重啟: 山林開放，採集獲 2 份材料。"},
-        {name: "Pitanatana", desc: "土器月: 科學轉譯必成功 (可維修獎勵)。"},
-        {name: "Kalimman", desc: "飛魚終食祭: 商店材料價格加倍。"},
-        {name: "Kaneman", desc: "禁忌之月: 無法執行完工 (填縫)。"},
-        {name: "Kapitowan", desc: "祭神月: 青年與耆老同區域，KP 自動 +2。"},
-        {name: "Kaowan", desc: "手工藝月: 捻線不再消耗 AP。"}
-    ];
-    
-    monthNameEl.textContent = rules[state.month - 1].name;
-    monthDescEl.textContent = rules[state.month - 1].desc;
+    monthNameEl.textContent = GAME_RULES[state.month - 1].name;
+    monthDescEl.textContent = GAME_RULES[state.month - 1].desc;
 
     // Players list & Map locations
     playersListEl.innerHTML = '';

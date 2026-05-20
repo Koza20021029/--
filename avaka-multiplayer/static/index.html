@@ -499,6 +499,98 @@
                         </div>
                     </div>
                 </main>
+                
+                <!-- Special Actions (Moved here) -->
+                <style>
+                .special-actions-panel {
+                    display: flex; gap: 1.5rem; align-items: center; justify-content: center; 
+                    padding: 1.2rem 2rem; border-radius: 16px; margin-top: -0.5rem; margin-bottom: 0.5rem;
+                    background: linear-gradient(145deg, rgba(20, 25, 35, 0.85), rgba(10, 15, 25, 0.95));
+                    border: 1px solid rgba(212, 175, 55, 0.25);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(212, 175, 55, 0.05);
+                    backdrop-filter: blur(16px);
+                    position: relative;
+                    overflow: hidden;
+                }
+                .special-actions-panel::before {
+                    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+                    background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+                    transform: skewX(-20deg); animation: panel-shine 7s infinite; pointer-events: none;
+                }
+                @keyframes panel-shine {
+                    0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; }
+                }
+                .premium-action-btn {
+                    position: relative;
+                    background: linear-gradient(180deg, rgba(212, 175, 55, 0.12), rgba(212, 175, 55, 0.03));
+                    border: 1px solid rgba(212, 175, 55, 0.4);
+                    border-radius: 8px;
+                    color: #fef08a;
+                    padding: 0.7rem 1.4rem;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    letter-spacing: 0.05em;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+                    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 0 15px rgba(212,175,55,0.05);
+                    display: flex; align-items: center; gap: 0.6rem;
+                }
+                .premium-action-btn:hover {
+                    transform: translateY(-2px) scale(1.02);
+                    background: linear-gradient(180deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.1));
+                    border-color: rgba(212, 175, 55, 0.9);
+                    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35), inset 0 0 20px rgba(212,175,55,0.2);
+                    color: #fff;
+                }
+                .premium-action-btn:active {
+                    transform: translateY(1px) scale(0.98);
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+                }
+                .premium-action-btn .btn-icon { font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+                
+                .teach-box-premium {
+                    display: flex; align-items: center; gap: 1rem;
+                    background: rgba(0, 0, 0, 0.25);
+                    padding: 0.6rem 1rem;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255,255,255,0.06);
+                    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+                }
+                .teach-target-select {
+                    appearance: none; -webkit-appearance: none;
+                    background: rgba(15, 25, 40, 0.9) url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237dd3fc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 0.8rem center/1em;
+                    color: #e2e8f0;
+                    border: 1px solid rgba(56, 189, 248, 0.3);
+                    padding: 0.5rem 2.2rem 0.5rem 1rem;
+                    border-radius: 8px;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    outline: none;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                }
+                .teach-target-select:focus, .teach-target-select:hover {
+                    border-color: rgba(56, 189, 248, 0.7);
+                    box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+                    background-color: rgba(20, 35, 55, 0.95);
+                }
+                </style>
+                <div class="special-actions special-actions-panel">
+                    <button id="ask-btn" class="premium-action-btn" style="display:none;">
+                        <span class="btn-icon">🙏</span> 向耆老請益 <span style="font-size:0.8rem;opacity:0.7;font-weight:normal;">(2 AP → 獲 3 KP)</span>
+                    </button>
+                    <div id="teach-container" class="teach-box-premium" style="display:none;">
+                        <div style="display:flex; flex-direction:column; gap:0.2rem;">
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:1px;">選擇學徒</span>
+                            <select id="teach-target" class="teach-target-select"></select>
+                        </div>
+                        <button id="teach-btn" class="premium-action-btn">
+                            <span class="btn-icon">💡</span> 遠程指導 <span style="font-size:0.8rem;opacity:0.7;font-weight:normal;">(1 AP → 他人獲 1 KP)</span>
+                        </button>
+                    </div>
+                </div>
 
                     <!-- Avaka Cinematic Title Animation Panel -->
                     <div class="glass" style="
@@ -551,14 +643,6 @@
             <!-- Bottom Player Actions -->
             <div class="player-actions glass">
                 <div id="my-status"></div>
-                <div class="special-actions">
-                    <button id="ask-btn" class="btn action-btn glow-btn" style="display:none;">🙏 向耆老請益 (2 AP -> 獲 3 KP)</button>
-                    <div id="teach-container" style="display:none;" class="teach-box">
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">選擇青年</span>
-                        <select id="teach-target" class="custom-select"></select>
-                        <button id="teach-btn" class="btn action-btn glow-btn">💡 遠程指導 (1 AP -> 他人獲 1 KP)</button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
