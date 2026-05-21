@@ -309,44 +309,252 @@ input[type="text"]:focus {
     .role-selector { grid-template-columns: 1fr; }
 }
 
+/* ─── BorderGlow Role Cards ──────────────────────────────────────────────── */
+
 .role-option {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,255,255,0.05);
-    padding: 1.5rem 1rem;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    text-align: center;
+    --edge-proximity: 0;
+    --cursor-angle: 45deg;
+    --edge-sensitivity: 28;
+    --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+    --border-radius: 16px;
+    --glow-padding: 36px;
+    --cone-spread: 22;
+    --fill-opacity: 0.45;
+
+    /* Role-specific glow & gradient colors — overridden per role */
+    --glow-color:     hsl(43deg 85% 70% / 100%);
+    --glow-color-60:  hsl(43deg 85% 70% / 60%);
+    --glow-color-50:  hsl(43deg 85% 70% / 50%);
+    --glow-color-40:  hsl(43deg 85% 70% / 40%);
+    --glow-color-30:  hsl(43deg 85% 70% / 30%);
+    --glow-color-20:  hsl(43deg 85% 70% / 20%);
+    --glow-color-10:  hsl(43deg 85% 70% / 10%);
+    --gradient-one:   radial-gradient(at 80% 55%, #d4af37 0px, transparent 50%);
+    --gradient-two:   radial-gradient(at 25% 20%, #f6d860 0px, transparent 50%);
+    --gradient-three: radial-gradient(at 10% 85%, #a16207 0px, transparent 50%);
+    --gradient-four:  radial-gradient(at 60% 70%, #fef08a 0px, transparent 50%);
+    --gradient-five:  radial-gradient(at 85% 10%, #d97706 0px, transparent 50%);
+    --gradient-six:   radial-gradient(at 5% 50%,  #f59e0b 0px, transparent 50%);
+    --gradient-seven: radial-gradient(at 50% 5%,  #fbbf24 0px, transparent 50%);
+    --gradient-base:  linear-gradient(#d4af37 0 100%);
+
     position: relative;
-    overflow: hidden;
+    border-radius: var(--border-radius);
+    isolation: isolate;
+    transform: translate3d(0, 0, 0.01px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
+    text-align: center;
+    cursor: pointer;
+    overflow: visible;
+
+    background: rgba(8, 12, 28, 0.75);
+    border: 1px solid rgb(255 255 255 / 12%);
+    box-shadow:
+        rgba(0,0,0,0.15) 0px 2px 4px,
+        rgba(0,0,0,0.15) 0px 4px 8px,
+        rgba(0,0,0,0.15) 0px 8px 20px,
+        rgba(0,0,0,0.15) 0px 16px 40px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.role-option:hover { 
-    background: rgba(255,255,255,0.05); 
-    transform: translateY(-5px); 
-    border-color: rgba(255,255,255,0.2);
+.role-option:hover {
+    transform: translateY(-6px) translate3d(0, 0, 0.01px);
 }
 
+/* Per-role color themes */
+.role-option[data-role="elder"] {
+    --glow-color:     hsl(43deg 85% 68% / 100%);
+    --glow-color-60:  hsl(43deg 85% 68% / 60%);
+    --glow-color-50:  hsl(43deg 85% 68% / 50%);
+    --glow-color-40:  hsl(43deg 85% 68% / 40%);
+    --glow-color-30:  hsl(43deg 85% 68% / 30%);
+    --glow-color-20:  hsl(43deg 85% 68% / 20%);
+    --glow-color-10:  hsl(43deg 85% 68% / 10%);
+    --gradient-one:   radial-gradient(at 80% 55%, #d4af37 0px, transparent 50%);
+    --gradient-two:   radial-gradient(at 25% 20%, #f6d860 0px, transparent 50%);
+    --gradient-three: radial-gradient(at 10% 85%, #a16207 0px, transparent 50%);
+    --gradient-four:  radial-gradient(at 60% 70%, #fef08a 0px, transparent 50%);
+    --gradient-five:  radial-gradient(at 85% 10%, #d97706 0px, transparent 50%);
+    --gradient-six:   radial-gradient(at 5% 50%,  #f59e0b 0px, transparent 50%);
+    --gradient-seven: radial-gradient(at 50% 5%,  #fbbf24 0px, transparent 50%);
+    --gradient-base:  linear-gradient(#d4af37 0 100%);
+}
+.role-option[data-role="youth"] {
+    --glow-color:     hsl(152deg 75% 55% / 100%);
+    --glow-color-60:  hsl(152deg 75% 55% / 60%);
+    --glow-color-50:  hsl(152deg 75% 55% / 50%);
+    --glow-color-40:  hsl(152deg 75% 55% / 40%);
+    --glow-color-30:  hsl(152deg 75% 55% / 30%);
+    --glow-color-20:  hsl(152deg 75% 55% / 20%);
+    --glow-color-10:  hsl(152deg 75% 55% / 10%);
+    --gradient-one:   radial-gradient(at 80% 55%, #10b981 0px, transparent 50%);
+    --gradient-two:   radial-gradient(at 25% 20%, #6ee7b7 0px, transparent 50%);
+    --gradient-three: radial-gradient(at 10% 85%, #064e3b 0px, transparent 50%);
+    --gradient-four:  radial-gradient(at 60% 70%, #a7f3d0 0px, transparent 50%);
+    --gradient-five:  radial-gradient(at 85% 10%, #34d399 0px, transparent 50%);
+    --gradient-six:   radial-gradient(at 5% 50%,  #059669 0px, transparent 50%);
+    --gradient-seven: radial-gradient(at 50% 5%,  #6ee7b7 0px, transparent 50%);
+    --gradient-base:  linear-gradient(#10b981 0 100%);
+}
+.role-option[data-role="middle"] {
+    --glow-color:     hsl(265deg 70% 72% / 100%);
+    --glow-color-60:  hsl(265deg 70% 72% / 60%);
+    --glow-color-50:  hsl(265deg 70% 72% / 50%);
+    --glow-color-40:  hsl(265deg 70% 72% / 40%);
+    --glow-color-30:  hsl(265deg 70% 72% / 30%);
+    --glow-color-20:  hsl(265deg 70% 72% / 20%);
+    --glow-color-10:  hsl(265deg 70% 72% / 10%);
+    --gradient-one:   radial-gradient(at 80% 55%, #a78bfa 0px, transparent 50%);
+    --gradient-two:   radial-gradient(at 25% 20%, #c4b5fd 0px, transparent 50%);
+    --gradient-three: radial-gradient(at 10% 85%, #4c1d95 0px, transparent 50%);
+    --gradient-four:  radial-gradient(at 60% 70%, #ddd6fe 0px, transparent 50%);
+    --gradient-five:  radial-gradient(at 85% 10%, #7c3aed 0px, transparent 50%);
+    --gradient-six:   radial-gradient(at 5% 50%,  #8b5cf6 0px, transparent 50%);
+    --gradient-seven: radial-gradient(at 50% 5%,  #c4b5fd 0px, transparent 50%);
+    --gradient-base:  linear-gradient(#a78bfa 0 100%);
+}
+
+/* Prismatic border — tracks cursor angle */
+.role-option::before,
+.role-option::after,
+.role-option > .edge-light {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    transition: opacity 0.3s ease-out;
+    z-index: -1;
+    pointer-events: none;
+}
+.role-option:not(:hover):not(.sweep-active)::before,
+.role-option:not(:hover):not(.sweep-active)::after,
+.role-option:not(:hover):not(.sweep-active) > .edge-light {
+    opacity: 0;
+    transition: opacity 0.7s ease-in-out;
+}
+
+/* Conic-masked gradient border */
+.role-option::before {
+    z-index: -1;
+    border: 1px solid transparent;
+    background:
+        linear-gradient(rgba(8,12,28,0.75) 0 100%) padding-box,
+        linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+        var(--gradient-one) border-box,
+        var(--gradient-two) border-box,
+        var(--gradient-three) border-box,
+        var(--gradient-four) border-box,
+        var(--gradient-five) border-box,
+        var(--gradient-six) border-box,
+        var(--gradient-seven) border-box,
+        var(--gradient-base) border-box;
+    opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+    mask-image: conic-gradient(
+        from var(--cursor-angle) at center,
+        black calc(var(--cone-spread) * 1%),
+        transparent calc((var(--cone-spread) + 15) * 1%),
+        transparent calc((100 - var(--cone-spread) - 15) * 1%),
+        black calc((100 - var(--cone-spread)) * 1%)
+    );
+}
+
+/* Soft fill glow on edges */
+.role-option::after {
+    z-index: -1;
+    border: 1px solid transparent;
+    background:
+        var(--gradient-one) padding-box,
+        var(--gradient-two) padding-box,
+        var(--gradient-three) padding-box,
+        var(--gradient-four) padding-box,
+        var(--gradient-five) padding-box,
+        var(--gradient-six) padding-box,
+        var(--gradient-seven) padding-box,
+        var(--gradient-base) padding-box;
+    mask-image:
+        linear-gradient(to bottom, black, black),
+        radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+        radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+        radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+        radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+        radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+        conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+    mask-composite: subtract, add, add, add, add, add;
+    opacity: calc(var(--fill-opacity) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+    mix-blend-mode: soft-light;
+}
+
+/* Outer glow halo */
+.role-option > .edge-light {
+    inset: calc(var(--glow-padding) * -1);
+    z-index: 1;
+    mask-image: conic-gradient(
+        from var(--cursor-angle) at center,
+        black 2.5%, transparent 10%, transparent 90%, black 97.5%
+    );
+    opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+    mix-blend-mode: plus-lighter;
+}
+.role-option > .edge-light::before {
+    content: "";
+    position: absolute;
+    inset: var(--glow-padding);
+    border-radius: var(--border-radius);
+    box-shadow:
+        inset 0 0 0 1px var(--glow-color),
+        inset 0 0 1px 0 var(--glow-color-60),
+        inset 0 0 3px 0 var(--glow-color-50),
+        inset 0 0 8px 0 var(--glow-color-40),
+        inset 0 0 18px 0 var(--glow-color-30),
+        inset 0 0 30px 2px var(--glow-color-20),
+        inset 0 0 55px 2px var(--glow-color-10),
+        0 0 1px 0 var(--glow-color-60),
+        0 0 3px 0 var(--glow-color-50),
+        0 0 8px 0 var(--glow-color-40),
+        0 0 18px 0 var(--glow-color-30),
+        0 0 30px 2px var(--glow-color-20),
+        0 0 55px 2px var(--glow-color-10);
+}
+
+/* Inner content wrapper */
+.role-option > .role-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 1.5rem 1rem;
+}
+
+/* Selected state */
 .role-option.selected {
-    border-color: rgba(212, 175, 55, 0.5);
-    background: linear-gradient(180deg, rgba(212, 175, 55, 0.1) 0%, rgba(0,0,0,0.4) 100%);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 2px 10px rgba(212, 175, 55, 0.1);
+    background: rgba(12, 18, 38, 0.85);
 }
 .role-option.selected::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: var(--secondary);
-    box-shadow: 0 0 15px var(--secondary);
+    opacity: 0.28 !important;
+    mask-image: none; /* 360° 均勻邊框，不受角度遮罩限制 */
 }
+.role-option.selected::after {
+    opacity: 0.08 !important;
+}
+.role-option.selected > .edge-light {
+    opacity: 0.15 !important;
+}
+.role-option[data-role="elder"].selected  { border-color: rgba(212, 175, 55, 0.35); }
+.role-option[data-role="youth"].selected  { border-color: rgba(16, 185, 129, 0.35); }
+.role-option[data-role="middle"].selected { border-color: rgba(167, 139, 250, 0.35); }
 
 .role-icon { font-size: 2.2rem; margin-bottom: 0.8rem; opacity: 0.9; }
 
 .role-option h3 { font-size: 1.15rem; margin-bottom: 1rem; line-height: 1.4; font-weight: 700; color: var(--text-main); }
-.role-option.selected h3 { color: var(--secondary); }
+.role-option[data-role="elder"].selected h3  { color: #d4af37; }
+.role-option[data-role="youth"].selected h3  { color: #10b981; }
+.role-option[data-role="middle"].selected h3 { color: #a78bfa; }
 
 .role-badges { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
 .badge.ap-badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-family: 'Outfit', sans-serif;}

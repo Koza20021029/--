@@ -171,6 +171,42 @@ roleOptions.forEach(opt => {
     });
 });
 
+// ── BorderGlow: pointer tracking for role cards ───────────────────────────
+(function initRoleCardGlow() {
+    function getCenterHalf(el) {
+        const { width, height } = el.getBoundingClientRect();
+        return [width / 2, height / 2];
+    }
+    function getEdgeProximity(el, x, y) {
+        const [cx, cy] = getCenterHalf(el);
+        const dx = x - cx, dy = y - cy;
+        let kx = Infinity, ky = Infinity;
+        if (dx !== 0) kx = cx / Math.abs(dx);
+        if (dy !== 0) ky = cy / Math.abs(dy);
+        return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1) * 100;
+    }
+    function getCursorAngle(el, x, y) {
+        const [cx, cy] = getCenterHalf(el);
+        const dx = x - cx, dy = y - cy;
+        if (dx === 0 && dy === 0) return 0;
+        let deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        return ((deg % 360) + 360) % 360;
+    }
+    roleOptions.forEach(card => {
+        card.addEventListener('pointermove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--edge-proximity', getEdgeProximity(card, x, y).toFixed(2));
+            card.style.setProperty('--cursor-angle', getCursorAngle(card, x, y).toFixed(2) + 'deg');
+        }, { passive: true });
+        card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--edge-proximity', '0');
+        }, { passive: true });
+    });
+})();
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Join & Create
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize LightRays shader background
