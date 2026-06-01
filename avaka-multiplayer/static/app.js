@@ -738,14 +738,26 @@ function applyLanguage() {
             const words = ['Dimension', 'of', 'the', 'Island'];
             words.forEach(w => {
                 const s = document.createElement('span');
-                s.textContent = w;
+                s.style.display = 'inline-block';
+                s.style.whiteSpace = 'nowrap';
+                
+                w.split('').forEach(char => {
+                    const ls = document.createElement('span');
+                    ls.className = 'proximity-letter';
+                    ls.textContent = char;
+                    ls.style.display = 'inline-block';
+                    s.appendChild(ls);
+                });
+                
                 glowTextEl.appendChild(s);
             });
         } else {
             glowTextEl.classList.remove('lang-en');
             t.title.forEach(char => {
                 const s = document.createElement('span');
+                s.className = 'proximity-letter';
                 s.textContent = char;
+                s.style.display = 'inline-block';
                 glowTextEl.appendChild(s);
             });
         }
@@ -1896,64 +1908,100 @@ function renderGame(state) {
             giveBtnHtml = `<button class="give-btn" data-id="${id}" style="font-size:0.75rem; padding: 0.3rem 0.8rem; border-radius:6px; background:rgba(212,175,55,0.15); color:var(--secondary); border:1px solid rgba(212,175,55,0.4); cursor:pointer; font-weight:bold; transition:all 0.3s; box-shadow: 0 0 10px rgba(212,175,55,0.1);">${translations[currentLang].game.giveBtn}</button>`;
         }
         
+        const roleColor = p.role === 'elder' ? '#d97706' : (p.role === 'youth' ? '#10b981' : '#0ea5e9');
+        const behindGlowColor = p.role === 'elder' ? 'rgba(217, 119, 6, 0.67)' : (p.role === 'youth' ? 'rgba(16, 185, 129, 0.67)' : 'rgba(14, 165, 233, 0.67)');
+        const innerGradient = p.role === 'elder' 
+            ? 'linear-gradient(145deg, rgba(217, 119, 6, 0.18) 0%, rgba(2, 6, 23, 0.9) 100%)' 
+            : (p.role === 'youth' 
+                ? 'linear-gradient(145deg, rgba(16, 185, 129, 0.18) 0%, rgba(2, 6, 23, 0.9) 100%)' 
+                : 'linear-gradient(145deg, rgba(14, 165, 233, 0.18) 0%, rgba(2, 6, 23, 0.9) 100%)');
+
         // Sidebar item
         const pEl = document.createElement('div');
-        pEl.className = `player-item ${isMe ? 'me' : ''} ${p.progress === 4 ? 'finished' : ''}`;
+        pEl.className = `pc-card-wrapper ${isMe ? 'me' : ''} ${p.progress === 4 ? 'finished' : ''}`;
+        pEl.style.setProperty('--behind-glow-color', behindGlowColor);
+        pEl.style.setProperty('--inner-gradient', innerGradient);
+        pEl.style.setProperty('margin-bottom', '1.2rem');
+        pEl.style.setProperty('width', '100%');
+
         pEl.innerHTML = `
-            <div class="player-header">
-                <div class="player-title-row">
-                    <div class="player-name-wrapper">
-                        ${isMe ? `
-                        <span class="player-name player-avatar-trigger"
-                            title="${isEn ? 'Click to preview your character' : '點擊預覽你的角色'}"
-                            data-player-name="${p.name}"
-                            data-player-role="${p.role}"
-                            style="cursor:pointer; text-decoration:underline dotted rgba(255,255,255,0.3); text-underline-offset:3px;"
-                        >${p.avatar ? p.avatar.icon : ''} ${p.name} <span style="font-size:0.65rem;opacity:0.55;">👁</span></span>
-                        ` : `<span class="player-name">${p.avatar ? p.avatar.icon : ''} ${p.name}</span>`}
-                        ${isMe ? `<span class="tag is-me">${translations[currentLang].game.meTag}</span>` : ''}
+            <div class="pc-behind"></div>
+            <div class="pc-card-shell">
+                <section class="pc-card" style="${isMe ? 'border-color: ' + roleColor + '66; box-shadow: 0 0 15px ' + roleColor + '33;' : ''}">
+                    <div class="pc-inside" style="padding: 1.1rem 1rem;">
+                        <div class="pc-shine"></div>
+                        <div class="pc-glare"></div>
+                        <div class="pc-content">
+                            <!-- Header row: Avatar, Name & Status -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div class="loc-avatar-ring" style="width: 40px; height: 40px; border-color: ${roleColor}; box-shadow: 0 0 10px ${roleColor}44; flex-shrink: 0;">
+                                        ${p.avatar && p.avatar.image 
+                                            ? `<img src="${p.avatar.image}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` 
+                                            : `<span style="font-size:1.5rem; line-height:1;">${p.avatar ? p.avatar.icon : ''}</span>`}
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 1px;">
+                                        ${isMe ? `
+                                        <span class="player-name player-avatar-trigger"
+                                            title="${isEn ? 'Click to preview your character' : '點擊預覽你的角色'}"
+                                            data-player-name="${p.name}"
+                                            data-player-role="${p.role}"
+                                            style="cursor:pointer; text-decoration:underline dotted rgba(255,255,255,0.4); text-underline-offset:3px; font-weight: 800; font-size: 1.15rem; color: #fff; line-height: 1.2;"
+                                        >${p.name} <span style="font-size:0.65rem;opacity:0.65;">👁</span></span>
+                                        ` : `<span class="player-name" style="font-weight: 800; font-size: 1.15rem; color: #fff; line-height: 1.2;">${p.name}</span>`}
+                                        ${isMe ? `<span class="tag is-me" style="width: fit-content; padding: 0.05rem 0.35rem; font-size: 0.65rem; margin-top: 1px; display: inline-block;">${translations[currentLang].game.meTag}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="player-status-icon" style="font-size: 1.1rem; flex-shrink: 0;">
+                                    ${p.ready ? `<span title="${isEn ? 'Ready' : '已準備'}" class="ready-icon">✅</span>` : `<span title="${isEn ? 'Thinking' : '思考中'}" class="thinking-icon" style="opacity:0.6;">⏳</span>`}
+                                </div>
+                            </div>
+
+                            <!-- Role Badge and Give Button -->
+                            <div style="margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; min-height: 28px;">
+                                <span class="role-badge ${p.role}" style="font-size: 0.9rem; font-weight: 800;">${getRoleName(p.role)}</span>
+                                ${giveBtnHtml}
+                            </div>
+
+                            <!-- Traits list -->
+                            ${p.avatar && p.avatar.traits && p.avatar.traits.length > 0 ? `
+                            <div class="player-traits" style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom: 0.75rem;">
+                                ${p.avatar.traits.map(t => `<span style="background:rgba(255,255,255,0.07); padding:0.22rem 0.55rem; border-radius:8px; font-size:0.78rem; color:var(--text-muted); border:1px solid rgba(255,255,255,0.08); font-weight: 600; white-space: nowrap;">${t}</span>`).join('')}
+                            </div>
+                            ` : ''}
+
+                            <!-- Player Stats Grid -->
+                            <div class="player-stats-grid" style="margin-bottom: 0.75rem;">
+                                <div class="stat-box ap-box" style="padding: 0.35rem 0.2rem;">
+                                    <span class="stat-icon" style="font-size: 0.95rem;">⚡</span>
+                                    <span class="stat-label" style="font-size: 0.7rem;">${translations[currentLang].game.ap}</span>
+                                    <span class="stat-value" style="font-size: 0.95rem;">${p.ap}</span>
+                                </div>
+                                <div class="stat-box kp-box" style="padding: 0.35rem 0.2rem;">
+                                    <span class="stat-icon" style="font-size: 0.95rem;">💡</span>
+                                    <span class="stat-label" style="font-size: 0.7rem;">${translations[currentLang].game.kp}</span>
+                                    <span class="stat-value" style="font-size: 0.95rem;">${p.kp}</span>
+                                </div>
+                                <div class="stat-box mat-box" style="padding: 0.35rem 0.2rem;">
+                                    <span class="stat-icon" style="font-size: 0.95rem;">🌿</span>
+                                    <span class="stat-label" style="font-size: 0.7rem;">${translations[currentLang].game.mat}</span>
+                                    <span class="stat-value" style="font-size: 0.95rem;">${p.materials}</span>
+                                </div>
+                            </div>
+
+                            <!-- Footer row -->
+                            <div class="player-footer" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.6rem; margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                                <div class="progress-pill" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">
+                                    <span class="progress-label" style="font-size: 0.7rem;">${translations[currentLang].game.progressLabel}</span>
+                                    <span class="progress-value" style="font-size: 0.78rem;">${steps[p.progress]}</span>
+                                </div>
+                                <div class="score-pill" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">
+                                    <span>⭐ ${p.score}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="player-status-icon">
-                        ${p.ready ? `<span title="${isEn ? 'Ready' : '已準備'}" class="ready-icon">✅</span>` : `<span title="${isEn ? 'Thinking' : '思考中'}" class="thinking-icon" style="opacity:0.6;">⏳</span>`}
-                    </div>
-                </div>
-                <div class="player-role-row" style="margin-bottom:0.5rem;">
-                    <span class="role-badge ${p.role}">${getRoleName(p.role)}</span>
-                    ${giveBtnHtml}
-                </div>
-                ${p.avatar && p.avatar.traits && p.avatar.traits.length > 0 ? `
-                <div class="player-traits" style="display:flex; flex-wrap:wrap; gap:0.2rem; margin-bottom:0.6rem;">
-                    ${p.avatar.traits.map(t => `<span style="background:rgba(255,255,255,0.05); padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; color:var(--text-muted); border:1px solid rgba(255,255,255,0.05);">${t}</span>`).join('')}
-                </div>
-                ` : ''}
-            </div>
-            
-            <div class="player-stats-grid">
-                <div class="stat-box ap-box">
-                    <span class="stat-icon">⚡</span>
-                    <span class="stat-label">${translations[currentLang].game.ap}</span>
-                    <span class="stat-value">${p.ap}</span>
-                </div>
-                <div class="stat-box kp-box">
-                    <span class="stat-icon">💡</span>
-                    <span class="stat-label">${translations[currentLang].game.kp}</span>
-                    <span class="stat-value">${p.kp}</span>
-                </div>
-                <div class="stat-box mat-box">
-                    <span class="stat-icon">🌿</span>
-                    <span class="stat-label">${translations[currentLang].game.mat}</span>
-                    <span class="stat-value">${p.materials}</span>
-                </div>
-            </div>
-            
-            <div class="player-footer">
-                <div class="progress-pill">
-                    <span class="progress-label">${translations[currentLang].game.progressLabel}</span>
-                    <span class="progress-value">${steps[p.progress]}</span>
-                </div>
-                <div class="score-pill">
-                    <span>⭐ ${p.score}</span>
-                </div>
+                </section>
             </div>
         `;
         playersListEl.appendChild(pEl);
@@ -2035,6 +2083,9 @@ function renderGame(state) {
 
     // Logs
     logsEl.innerHTML = state.logs.map(l => `<div class="log-entry">${translateLog(l)}</div>`).reverse().join('');
+    
+    // Initialize 3D holographic tilt trackers for sidebar player cards
+    initPlayerCardsTilt();
 }
 
 function renderGameOver(state) {
@@ -2171,3 +2222,144 @@ document.getElementById('avatar-preview-close')?.addEventListener('click', close
 document.getElementById('avatar-preview-modal')?.addEventListener('click', (e) => {
     if (e.target === document.getElementById('avatar-preview-modal')) closeAvatarPreview();
 });
+
+// ── Variable Proximity Hover / Proximity Text Animation system ────────────────
+(function initVariableProximity() {
+    let mousePos = { x: -1000, y: -1000 }; // Initialize far off-screen
+    let lastMousePos = { x: null, y: null };
+    
+    function updatePosition(clientX, clientY) {
+        mousePos.x = clientX;
+        mousePos.y = clientY;
+    }
+    
+    // Track mouse position on window
+    window.addEventListener('mousemove', (ev) => updatePosition(ev.clientX, ev.clientY));
+    window.addEventListener('mousedown', (ev) => updatePosition(ev.clientX, ev.clientY));
+    
+    // Track touch position for mobile support
+    window.addEventListener('touchmove', (ev) => {
+        if (ev.touches.length > 0) {
+            updatePosition(ev.touches[0].clientX, ev.touches[0].clientY);
+        }
+    });
+    window.addEventListener('touchstart', (ev) => {
+        if (ev.touches.length > 0) {
+            updatePosition(ev.touches[0].clientX, ev.touches[0].clientY);
+        }
+    });
+
+    const radius = 220;       // Detection radius in pixels
+
+    function proximityLoop() {
+        // Skip layout calculations if mouse position hasn't changed
+        if (mousePos.x === lastMousePos.x && mousePos.y === lastMousePos.y) {
+            requestAnimationFrame(proximityLoop);
+            return;
+        }
+        lastMousePos.x = mousePos.x;
+        lastMousePos.y = mousePos.y;
+
+        const titleContainer = document.querySelector('.title-wrapper');
+        const letterSpans = document.querySelectorAll('.glow-text .proximity-letter');
+        
+        if (titleContainer && letterSpans.length > 0) {
+            letterSpans.forEach(span => {
+                const rect = span.getBoundingClientRect();
+                const letterCenterX = rect.left + rect.width / 2;
+                const letterCenterY = rect.top + rect.height / 2;
+
+                // Compute standard Euclidean distance in viewport space
+                const dx = mousePos.x - letterCenterX;
+                const dy = mousePos.y - letterCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                let scale = 1.0;
+                let translateY = 0;
+                let shadowGlow = 'rgba(6,182,212,0.45)';
+
+                if (distance < radius) {
+                    // Quadratic ease-out falloff for organic ripple wave feel
+                    const falloff = 1 - (distance / radius);
+                    const easeFalloff = falloff * falloff;
+                    
+                    scale = 1 + 0.16 * easeFalloff;           // Scale up by up to 16%
+                    translateY = -12 * easeFalloff;            // Dynamic wave rise up to 12px
+                    shadowGlow = `rgba(6,182,212,${0.45 + 0.35 * easeFalloff})`; // Stronger glow on hover
+                }
+
+                span.style.fontWeight = '900';
+                span.style.fontVariationSettings = "'wght' 900";
+                span.style.transform = `translateY(${translateY}px) scale(${scale})`;
+                span.style.textShadow = `0 0 24px ${shadowGlow}`;
+            });
+        }
+        
+        requestAnimationFrame(proximityLoop);
+    }
+    
+    // Start the high-performance requestAnimationFrame loop
+    requestAnimationFrame(proximityLoop);
+})();
+
+// ─── ProfileCard 3D Holographic Parallax Tilt Engine ───────────────────────
+function initPlayerCardsTilt() {
+    const cards = document.querySelectorAll('.pc-card-wrapper');
+    cards.forEach(card => {
+        const shell = card.querySelector('.pc-card-shell');
+        const innerCard = card.querySelector('.pc-card');
+        if (!shell || !innerCard) return;
+
+        // Coordinate range-mapping helper
+        const adjustVal = (v, fMin, fMax, tMin, tMax) => {
+            return parseFloat((tMin + ((tMax - tMin) * (v - fMin)) / (fMax - fMin)).toFixed(3));
+        };
+
+        // Pointer move handler
+        card.addEventListener('pointermove', e => {
+            const rect = shell.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const width = rect.width || 1;
+            const height = rect.height || 1;
+
+            const percentX = Math.min(Math.max((100 / width) * x, 0), 100);
+            const percentY = Math.min(Math.max((100 / height) * y, 0), 100);
+
+            const centerX = percentX - 50;
+            const centerY = percentY - 50;
+
+            card.style.setProperty('--pointer-x', `${percentX}%`);
+            card.style.setProperty('--pointer-y', `${percentY}%`);
+            card.style.setProperty('--background-x', `${adjustVal(percentX, 0, 100, 35, 65)}%`);
+            card.style.setProperty('--background-y', `${adjustVal(percentY, 0, 100, 35, 65)}%`);
+            card.style.setProperty('--pointer-from-center', `${Math.min(Math.hypot(percentY - 50, percentX - 50) / 50, 1).toFixed(3)}`);
+            card.style.setProperty('--pointer-from-top', `${(percentY / 100).toFixed(3)}`);
+            card.style.setProperty('--pointer-from-left', `${(percentX / 100).toFixed(3)}`);
+            card.style.setProperty('--rotate-x', `${(-(centerX / 5)).toFixed(3)}deg`);
+            card.style.setProperty('--rotate-y', `${(centerY / 4).toFixed(3)}deg`);
+            card.style.setProperty('--card-opacity', '1');
+        });
+
+        // Pointer enter
+        card.addEventListener('pointerenter', () => {
+            shell.classList.add('active');
+            shell.classList.add('entering');
+            setTimeout(() => {
+                shell.classList.remove('entering');
+            }, 180);
+        });
+
+        // Pointer leave
+        card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--card-opacity', '0');
+            shell.classList.remove('active');
+            // Smoothly settle back to center
+            card.style.setProperty('--rotate-x', '0deg');
+            card.style.setProperty('--rotate-y', '0deg');
+            card.style.setProperty('--pointer-x', '50%');
+            card.style.setProperty('--pointer-y', '50%');
+        });
+    });
+}

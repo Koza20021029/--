@@ -250,6 +250,7 @@ body {
 }
 
 .glow-text span {
+    font-weight: 900;
     background: linear-gradient(to right, #0284c7, #0ea5e9, #06b6d4, #10b981, #34d399, #0284c7);
     background-size: 300% 100%;
     background-repeat: repeat;
@@ -259,6 +260,7 @@ body {
     -webkit-text-fill-color: transparent;
     animation: gradientTextMove 15s ease infinite;
     display: inline-block;
+    transition: transform 0.2s cubic-bezier(0.215, 0.61, 0.355, 1), text-shadow 0.2s ease-out;
 }
 
 @keyframes gradientTextMove {
@@ -290,10 +292,10 @@ body {
     justify-items: center;
     font-size: 4.8rem; /* Smaller than main title */
     font-family: 'Outfit', sans-serif; 
-    background: linear-gradient(180deg, rgba(253, 230, 138, 0.55) 0%, rgba(6, 182, 212, 0.12) 100%);
+    background: linear-gradient(180deg, rgba(253, 230, 138, 0.88) 0%, rgba(6, 182, 212, 0.45) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 35px rgba(253, 230, 138, 0.22));
+    filter: drop-shadow(0 0 25px rgba(253, 230, 138, 0.45)) drop-shadow(0 0 50px rgba(6, 182, 212, 0.3));
     white-space: nowrap;
     z-index: 0;
     font-weight: 800;
@@ -672,9 +674,9 @@ header {
 .month-details p { color: var(--text-muted); font-size: 0.9rem; }
 .header-actions { display: flex; gap: 1rem; }
 
-.main-layout { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; flex: 1; }
+.main-layout { display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; flex: 1; }
 
-.sidebar { padding: 1.5rem; background: var(--panel-bg); }
+.sidebar { padding: 1.25rem 1rem; background: var(--panel-bg); }
 .sidebar h3, .logs-panel h3 {
     margin-bottom: 1.5rem; color: var(--primary);
     border-bottom: 1px solid var(--glass-border); padding-bottom: 0.75rem; font-size: 1.1rem;
@@ -806,7 +808,7 @@ header {
 @keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
 @media (max-width: 1200px) {
-    .main-layout { grid-template-columns: 250px 1fr; }
+    .main-layout { grid-template-columns: 340px 1fr; }
     .map-area { flex-direction: column; }
 }
 @media (max-width: 992px) {
@@ -1108,6 +1110,202 @@ header {
     pointer-events: none;
     z-index: -2; /* Placed above bg-layer but behind other layers */
     overflow: hidden;
+}
+
+/* ─── ProfileCard 3D Holographic Parallax Styles ─────────────────────────── */
+.pc-card-wrapper {
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+  --pointer-from-center: 0;
+  --pointer-from-top: 0.5;
+  --pointer-from-left: 0.5;
+  --card-opacity: 0;
+  --rotate-x: 0deg;
+  --rotate-y: 0deg;
+  --background-x: 50%;
+  --background-y: 50%;
+  --grain: none;
+  --icon: none;
+  --behind-gradient: none;
+  --behind-glow-color: rgba(125, 190, 255, 0.67);
+  --behind-glow-size: 50%;
+  --inner-gradient: none;
+  --sunpillar-1: hsl(2, 100%, 73%);
+  --sunpillar-2: hsl(53, 100%, 69%);
+  --sunpillar-3: hsl(93, 100%, 69%);
+  --sunpillar-4: hsl(176, 100%, 76%);
+  --sunpillar-5: hsl(228, 100%, 74%);
+  --sunpillar-6: hsl(283, 100%, 73%);
+  --sunpillar-clr-1: var(--sunpillar-1);
+  --sunpillar-clr-2: var(--sunpillar-2);
+  --sunpillar-clr-3: var(--sunpillar-3);
+  --sunpillar-clr-4: var(--sunpillar-4);
+  --sunpillar-clr-5: var(--sunpillar-5);
+  --sunpillar-clr-6: var(--sunpillar-6);
+  --card-radius: 20px;
+  
+  perspective: 500px;
+  transform: translate3d(0, 0, 0.1px);
+  position: relative;
+  touch-action: none;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.pc-behind {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--pointer-x) var(--pointer-y),
+    var(--behind-glow-color) 0%,
+    transparent var(--behind-glow-size)
+  );
+  filter: blur(40px) saturate(1.1);
+  opacity: calc(0.8 * var(--card-opacity));
+  transition: opacity 200ms ease;
+  border-radius: var(--card-radius);
+}
+
+.pc-card-wrapper:hover,
+.pc-card-wrapper.active {
+  --card-opacity: 1;
+}
+
+.pc-card {
+  width: 100%;
+  border-radius: var(--card-radius);
+  position: relative;
+  background-blend-mode: color-dodge, normal, normal, normal;
+  box-shadow: rgba(0, 0, 0, 0.8) calc((var(--pointer-from-left) * 10px) - 3px)
+    calc((var(--pointer-from-top) * 20px) - 6px) 20px -5px;
+  transition: transform 0.6s ease;
+  transform: translateZ(0) rotateX(0deg) rotateY(0deg);
+  background: rgba(0, 0, 0, 0.9);
+  backface-visibility: hidden;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pc-card:hover,
+.pc-card.active {
+  transition: none;
+  transform: translateZ(0) rotateX(var(--rotate-y)) rotateY(var(--rotate-x));
+}
+
+.pc-card-shell.entering .pc-card {
+  transition: transform 180ms ease-out;
+}
+
+.pc-card-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.pc-inside {
+  inset: 0;
+  background-image: var(--inner-gradient);
+  background-color: rgba(2, 6, 23, 0.75);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-radius: var(--card-radius);
+}
+
+.pc-shine {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(0, 0, 1px);
+  overflow: hidden;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: var(--card-radius);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.pc-card-wrapper:hover .pc-shine,
+.pc-card-wrapper.active .pc-shine {
+  opacity: 1;
+}
+
+.pc-shine {
+  --space: 5%;
+  --angle: -45deg;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      var(--sunpillar-clr-1) calc(var(--space) * 1),
+      var(--sunpillar-clr-2) calc(var(--space) * 2),
+      var(--sunpillar-clr-3) calc(var(--space) * 3),
+      var(--sunpillar-clr-4) calc(var(--space) * 4),
+      var(--sunpillar-clr-5) calc(var(--space) * 5),
+      var(--sunpillar-clr-6) calc(var(--space) * 6),
+      var(--sunpillar-clr-1) calc(var(--space) * 7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      rgba(14, 21, 46, 0.5) 0%,
+      rgba(180, 200, 220, 0.6) 3.8%,
+      rgba(180, 220, 255, 0.7) 4.5%,
+      rgba(180, 200, 220, 0.6) 5.2%,
+      rgba(14, 21, 46, 0.5) 10%,
+      rgba(14, 21, 46, 0.5) 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--pointer-x) var(--pointer-y),
+      hsla(0, 0%, 0%, 0.1) 12%,
+      hsla(0, 0%, 0%, 0.15) 20%,
+      hsla(0, 0%, 0%, 0.25) 120%
+    );
+  background-position:
+    0 var(--background-y),
+    var(--background-x) var(--background-y),
+    center;
+  background-blend-mode: color, hard-light;
+  background-size:
+    500% 500%,
+    300% 300%,
+    200% 200%;
+  mix-blend-mode: color-dodge;
+  filter: brightness(0.66) contrast(1.33) saturate(0.33) opacity(0.5);
+}
+
+.pc-glare {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(0, 0, 1.1px);
+  overflow: hidden;
+  background-image: radial-gradient(
+    farthest-corner circle at var(--pointer-x) var(--pointer-y),
+    hsla(248, 25%, 80%, 0.45) 12%,
+    hsla(207, 40%, 30%, 0.1) 90%
+  );
+  mix-blend-mode: overlay;
+  filter: brightness(0.8) contrast(1.2);
+  z-index: 4;
+  pointer-events: none;
+  border-radius: var(--card-radius);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.pc-card-wrapper:hover .pc-glare,
+.pc-card-wrapper.active .pc-glare {
+  opacity: 1;
+}
+
+.pc-content {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 
