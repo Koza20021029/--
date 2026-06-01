@@ -119,6 +119,30 @@
     #music-btn:hover { transform: scale(1.12); background: rgba(6,180,212,0.32); }
     #music-btn.muted { animation: none; opacity: 0.45; }
     </style>
+
+    <!-- Language Switch Button (floating glassmorphism control) -->
+    <button id="lang-btn" title="切換語言 / Switch Language" style="
+        position: fixed; top: 24px; right: 24px; z-index: 9998;
+        padding: 0.6rem 1.2rem; border-radius: 20px; cursor: pointer;
+        background: rgba(6,180,212,0.18); backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(56,189,248,0.40);
+        box-shadow: 0 0 18px rgba(6,180,212,0.35), inset 0 0 8px rgba(56,189,248,0.1);
+        color: #7dd3fc; font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 600;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        transition: all 0.3s ease;
+    ">
+        🌐 ZH / EN
+    </button>
+
+    <style>
+    #lang-btn:hover {
+        transform: scale(1.08) translateY(-1px);
+        background: rgba(6,180,212,0.32);
+        border-color: rgba(56,189,248,0.70);
+        box-shadow: 0 0 28px rgba(6,180,212,0.65);
+        color: #fff;
+    }
+    </style>
     
     <!-- Background Layers -->
     <div class="bg-layer lobby-anim"></div>
@@ -260,10 +284,11 @@
 
         <!-- Lobby -->
         <div id="lobby" class="screen active">
-            <div class="lobby-card glass floating-element">
+            <div class="lobby-card">
                 <div class="title-wrapper">
                     <div class="bg-subtitle"><span>A</span><span>V</span><span>A</span><span>K</span><span>A</span></div>
                     <div class="glow-text"><span>島</span><span>嶼</span><span>的</span><span>維</span><span>度</span></div>
+                    <div class="title-tagline"></div>
                 </div>
                 
                 <div id="join-section">

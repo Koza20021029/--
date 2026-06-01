@@ -220,45 +220,83 @@ body {
 .glow-text {
     font-family: 'Noto Serif TC', serif;
     font-weight: 900;
-    font-size: 5rem;
-    color: var(--secondary);
+    font-size: 6.5rem; /* Larger than AVAKA */
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6)) drop-shadow(0 0 24px rgba(6,182,212,0.45));
     text-transform: uppercase;
     animation: cinematicReveal 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     opacity: 0;
     transform: scale(0.9);
     position: absolute;
-    bottom: 0; /* Anchored to the bottom of the wrapper */
-    left: 0;
+    bottom: -0.5rem; /* Slightly adjusted for larger size */
+    left: -2%; /* Slightly wider */
     z-index: 2;
     margin: 0;
-    display: flex;
-    justify-content: space-between;
-    width: calc(100% + 1.5rem); 
-    margin-left: -0.75rem; 
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    justify-items: center;
+    width: 104%; /* Wider than AVAKA */
+}
+
+.glow-text.lang-en {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 1.2rem !important;
+    font-size: 3.4rem !important; /* Elegant size for longer English words */
+    font-family: 'Outfit', sans-serif !important;
+    width: 100% !important;
+    left: 0 !important;
+    bottom: 0.2rem !important;
+    letter-spacing: 0.08em !important;
+}
+
+.glow-text span {
+    background: linear-gradient(to right, #0284c7, #0ea5e9, #06b6d4, #10b981, #34d399, #0284c7);
+    background-size: 300% 100%;
+    background-repeat: repeat;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: gradientTextMove 15s ease infinite;
+    display: inline-block;
+}
+
+@keyframes gradientTextMove {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 @keyframes cinematicReveal {
     to {
         opacity: 1;
         transform: scale(1);
-        text-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
     }
 }
 
 .bg-subtitle {
     position: absolute;
-    top: -2rem; /* Anchored high up */
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    font-size: 6.5rem; /* Make it large again since it has room */
-    font-family: 'Noto Serif TC', serif; 
-    color: rgba(255, 255, 255, 0.28); 
+    top: -0.6rem; /* Shifted to peek behind larger text */
+    left: 8%; /* Narrower than glow-text */
+    width: 84%; /* Narrower than glow-text */
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    justify-items: center;
+    font-size: 4.8rem; /* Smaller than main title */
+    font-family: 'Outfit', sans-serif; 
+    background: linear-gradient(180deg, rgba(253, 230, 138, 0.55) 0%, rgba(6, 182, 212, 0.12) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 35px rgba(253, 230, 138, 0.22));
     white-space: nowrap;
     z-index: 0;
-    font-weight: 900;
+    font-weight: 800;
     pointer-events: none;
     transform-origin: bottom center; 
     animation: revealMountains 5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
@@ -266,17 +304,34 @@ body {
 
 @keyframes revealMountains {
     0% { 
-        transform: translateY(2rem) scale(0.9, 0.8); 
+        transform: translateY(2rem) scale(0.95, 0.85); 
         opacity: 0; 
         filter: blur(15px);
-        text-shadow: 0 0 0px rgba(255, 255, 255, 0);
     }
     100% { 
-        transform: translateY(0) scale(1, 1.25); 
+        transform: translateY(0) scale(1, 1.15); 
         opacity: 1; 
         filter: blur(0px);
-        text-shadow: 0 0 35px rgba(255, 255, 255, 0.5); /* Stronger glow */
     }
+}
+
+.title-tagline {
+    position: absolute;
+    bottom: -3.8rem;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Outfit', 'Noto Serif TC', serif;
+    font-size: 1.55rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    margin-right: -0.25em; /* Mathematically center letter-spaced text */
+    color: var(--text-muted);
+    z-index: 3;
+    pointer-events: none;
+    text-shadow: 0 0 10px rgba(255,255,255,0.1);
 }
 
 .input-group { margin-bottom: 2rem; text-align: left; }

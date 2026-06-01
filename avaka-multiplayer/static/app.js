@@ -1,6 +1,997 @@
 const socket = io();
 // Removed mermaid
 
+// ── Vanilla TextType Component for Premium Cinematic Titles ─────────────────
+class TextType {
+    constructor(element, options = {}) {
+        this.element = element;
+        this.text = options.text || '';
+        this.typingSpeed = options.typingSpeed !== undefined ? options.typingSpeed : 50;
+        this.initialDelay = options.initialDelay !== undefined ? options.initialDelay : 0;
+        this.pauseDuration = options.pauseDuration !== undefined ? options.pauseDuration : 2000;
+        this.deletingSpeed = options.deletingSpeed !== undefined ? options.deletingSpeed : 30;
+        this.loop = options.loop !== undefined ? options.loop : true;
+        this.showCursor = options.showCursor !== undefined ? options.showCursor : true;
+        this.cursorCharacter = options.cursorCharacter || '|';
+        this.textColors = options.textColors || [];
+        this.variableSpeed = options.variableSpeed || null;
+        this.reverseMode = options.reverseMode || false;
+        
+        this.textArray = Array.isArray(this.text) ? this.text : [this.text];
+        this.displayedText = '';
+        this.currentCharIndex = 0;
+        this.isDeleting = false;
+        this.currentTextIndex = 0;
+        this.timeoutId = null;
+        
+        this.isSpacedMode = this.element.classList.contains('glow-text');
+        
+        this.init();
+    }
+    
+    init() {
+        this.element.innerHTML = '';
+        this.element.classList.add('text-type');
+        
+        if (!this.isSpacedMode) {
+            this.contentEl = document.createElement('span');
+            this.contentEl.className = 'text-type__content';
+            this.element.appendChild(this.contentEl);
+        }
+        
+        if (this.showCursor) {
+            this.cursorEl = document.createElement('span');
+            this.cursorEl.className = 'text-type__cursor';
+            this.cursorEl.textContent = this.cursorCharacter;
+            
+            // Cursor base styling
+            this.cursorEl.style.marginLeft = '0.15rem';
+            this.cursorEl.style.display = 'inline-block';
+            this.cursorEl.style.animation = 'text-type-blink 0.8s infinite alternate ease-in-out';
+            this.cursorEl.style.fontWeight = 'bold';
+            
+            if (!this.isSpacedMode) {
+                this.element.appendChild(this.cursorEl);
+            }
+            
+            if (!document.getElementById('text-type-blink-style')) {
+                const style = document.createElement('style');
+                style.id = 'text-type-blink-style';
+                style.textContent = `
+                    @keyframes text-type-blink {
+                        0%, 30% { opacity: 1; }
+                        70%, 100% { opacity: 0; }
+                    }
+                    .text-type {
+                        display: inline-block;
+                        white-space: pre-wrap;
+                    }
+                    .text-type__cursor {
+                        transition: color 0.3s ease, text-shadow 0.3s ease;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        setTimeout(() => {
+            this.tick();
+        }, this.initialDelay);
+    }
+    
+    getRandomSpeed() {
+        if (!this.variableSpeed) return this.typingSpeed;
+        const { min, max } = this.variableSpeed;
+        return Math.random() * (max - min) + min;
+    }
+    
+    updateColors(color) {
+        if (this.showCursor && this.cursorEl) {
+            this.cursorEl.style.color = color;
+            this.cursorEl.style.textShadow = `0 0 15px ${color}`;
+        }
+        if (!this.isSpacedMode && this.contentEl) {
+            this.contentEl.style.color = color;
+            this.contentEl.style.textShadow = `0 0 25px ${color}`;
+        }
+    }
+    
+    tick() {
+        const currentText = this.textArray[this.currentTextIndex];
+        const processedText = this.reverseMode ? currentText.split('').reverse().join('') : currentText;
+        
+        const color = this.textColors.length > 0 
+            ? this.textColors[this.currentTextIndex % this.textColors.length] 
+            : 'inherit';
+        
+        this.updateColors(color);
+        
+        if (this.isDeleting) {
+            if (this.displayedText === '') {
+                this.isDeleting = false;
+                if (this.currentTextIndex === this.textArray.length - 1 && !this.loop) {
+                    return;
+                }
+                this.currentTextIndex = (this.currentTextIndex + 1) % this.textArray.length;
+                this.currentCharIndex = 0;
+                this.timeoutId = setTimeout(() => this.tick(), this.pauseDuration);
+            } else {
+                this.displayedText = this.displayedText.slice(0, -1);
+                
+                if (this.isSpacedMode) {
+                    const spans = Array.from(this.element.querySelectorAll('span:not(.text-type__cursor)'));
+                    if (spans.length > 0) {
+                        spans[spans.length - 1].remove();
+                        const newSpans = Array.from(this.element.querySelectorAll('span:not(.text-type__cursor)'));
+                        if (newSpans.length > 0 && this.showCursor && this.cursorEl) {
+                            newSpans[newSpans.length - 1].appendChild(this.cursorEl);
+                        } else if (this.showCursor && this.cursorEl) {
+                            this.element.appendChild(this.cursorEl);
+                        }
+                    }
+                } else {
+                    this.contentEl.textContent = this.displayedText;
+                }
+                
+                this.timeoutId = setTimeout(() => this.tick(), this.deletingSpeed);
+            }
+        } else {
+            if (this.currentCharIndex < processedText.length) {
+                const char = processedText[this.currentCharIndex];
+                this.displayedText += char;
+                
+                if (this.isSpacedMode) {
+                    const charSpan = document.createElement('span');
+                    charSpan.textContent = char;
+                    charSpan.style.color = color;
+                    charSpan.style.textShadow = `0 0 35px ${color}`;
+                    charSpan.style.opacity = '0';
+                    charSpan.style.transform = 'scale(0.85)';
+                    charSpan.style.transition = 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2)';
+                    
+                    if (this.showCursor && this.cursorEl) {
+                        if (this.cursorEl.parentNode) {
+                            this.cursorEl.remove();
+                        }
+                        charSpan.appendChild(this.cursorEl);
+                    }
+                    
+                    this.element.appendChild(charSpan);
+                    
+                    requestAnimationFrame(() => {
+                        charSpan.style.opacity = '1';
+                        charSpan.style.transform = 'scale(1)';
+                    });
+                } else {
+                    this.contentEl.textContent = this.displayedText;
+                }
+                
+                this.currentCharIndex++;
+                const speed = this.variableSpeed ? this.getRandomSpeed() : this.typingSpeed;
+                this.timeoutId = setTimeout(() => this.tick(), speed);
+            } else {
+                if (!this.loop && this.currentTextIndex === this.textArray.length - 1) {
+                    return;
+                }
+                this.timeoutId = setTimeout(() => {
+                    this.isDeleting = true;
+                    this.tick();
+                }, this.pauseDuration);
+            }
+        }
+    }
+    
+    destroy() {
+        if (this.timeoutId) {
+            clearTimeout(this.timeoutId);
+        }
+    }
+}
+
+// ── Translation Mapping for Chinese & English Cover Page ────────────────────
+let currentLang = 'zh';
+let taglineInstance = null;
+
+const AVATAR_ROLE_LABELS = {
+    zh: {
+        elder: '資深工匠 — 為你的角色打造專屬外型',
+        youth: '青年學徒(部落青年) — 為你的角色打造專屬外型',
+        middle: '協商者(中年工匠) — 為你的角色打造專屬外型'
+    },
+    en: {
+        elder: 'Elder Artisan — Customize your own character appearance',
+        youth: 'Young Apprentice (Youth) — Customize your own character appearance',
+        middle: 'Negotiator (Middle) — Customize your own character appearance'
+    }
+};
+
+const endingTranslations = {
+    "【傳承之靈】活著的拼板舟": {
+        title: "【Spirit of Heritage】The Living Plank Boat",
+        text: "This boat is alive. Not merely as a metaphor, but truly living. You spent a whole year walking the same mountain paths as your ancestors. Your body remembers which tree to bypass when gathering, and which direction to twine the Avaka fibers so they won't snap. These actions might not be written down in books, but they are stored in the physical memory of the tribe, waiting to be awakened.<br><br>Later, scientific data confirmed that Avaka fibers expand when they absorb water. You suddenly realize that the elders' saying about 'letting the boat breathe' is not just imagination, but true shipbuilding science. When seawater seeps into the seams and the fibers swell, the boat actually becomes tighter and sturdier. It can be dismantled, repaired, and replaced piece by piece to set sail once more.<br><br>The memories you thought were broken were actually just waiting quietly for someone willing to inherit them.<br><br>And this boat will continue to sail, carrying the words spoken by the elders, and the memories you have reclaimed."
+    },
+    "【協商之光】時代的橋樑": {
+        title: "【Light of Negotiation】Bridge of the Era",
+        text: "You know very well that you cannot live solely in the past.<br><br>Children need schooling, fuel bills need to be paid, and time waits for no one. Under these real-life pressures, you tried to find a middle ground. A few pieces of industrial materials saved some effort, but you did not give up. You still knocked on the Elder's door, and you still asked the questions that no one would answer unless asked: how to choose materials, which steps cannot be skipped, and what taboos exist.<br><br>When the boat was completed, you couldn't quite tell if it was traditional or modern. But perhaps that is the most honest answer. Lanyu is not a museum; people live real lives here, and tradition is always rubbing, wearing down, and growing into new shapes in real life.<br><br>This boat carries the smell of industry, but also the wisdom of the elders. It is not perfect, but it was built by people living in this era."
+    },
+    "【效率之重】工業的餘溫": {
+        title: "【Weight of Efficiency】Warmth of Industry",
+        text: "The boat is finished. But something has been quietly lost.<br><br>Industrial glue sealed the seams perfectly. You didn't need to wait for the wood to expand, nor did you need to watch the calendar for the seasons; you saved most of your time. When the boat was launched, it looked no different from any other.<br><br>It's just that once it's broken, it can't be repaired. The traditional interlocking joints, and the possibility of taking it apart and rebuilding it, have disappeared along with the steps you chose to skip.<br><br>Your fingers have forgotten too. They forgot the resistance of the fibers moving back and forth, and they forgot how to identify wood species. It didn't happen overnight, but rather slipped away little by little, at every moment you chose convenience.<br><br>This boat works, but it cannot teach you anything. It is merely a commodity of the times."
+    },
+    "【失落之魂】斷裂的鏈條": {
+        title: "【Lost Soul】Broken Chain",
+        text: "The boat has been launched. You should feel accomplished, but inside you feel empty.<br><br>You never went to the mountains to gather Avaka, so you don't know what to say during gathering, or which days to avoid. You bypassed all the parts that seemed troublesome, and you also bypassed everything that truly mattered.<br><br>This boat has no connection to the sea, nor to the mountains. It is only a shape, a prop for tourists to take photos with. No one will want to repair it; when it breaks, it will be thrown away, and a new one will be made.<br><br>The songs sung during gathering, the physical knowledge that the elders said could only be understood by doing—these were not opposed by you, but ignored. Things that are ignored disappear more quietly and are harder to reclaim than things that are destroyed.<br><br>It is no one's fault. It is just the quiet, inevitable result of the era's progression."
+    },
+    "【文化斷裂】遺失的時間": {
+        title: "【Cultural Disruption】Lost Time",
+        text: "A year has passed, and the timber on the beach remains scattered.<br><br>You never started, as if stuck somewhere. Perhaps you didn't know who to ask for the next step, or perhaps you took too many detours. Day by day, time passed, and you were still not ready.<br><br>It takes a whole year for a boat to be born, not because the steps are so complex, but because it must follow the seasons: gathering, drying, waiting, and trimming. When your rhythm does not align with this pace, the boat stops there, waiting for a time that will never come.<br><br>Those fibers will rot. And the technical knowledge that has not yet been spoken will fade away along with the people who hold the memories.<br><br>It is no one's fault. It is simply the inevitable outcome as the era moves forward."
+    }
+};
+
+const translations = {
+    zh: {
+        title: ['島', '嶼', '的', '維', '度'],
+        tagline: [
+            '— 活著的拼板舟 —',
+            '— 飛魚季的低喃 —',
+            '— 傳承者的試煉 —',
+            '— 與時序順應的旅程 —'
+        ],
+        placeholderName: '輸入你的名字...',
+        roleLabel: '選擇你的角色定位',
+        roles: {
+            elder: {
+                title: '資深工匠<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(耆老)</span>',
+                badgeAp: 'AP 6',
+                badgeKp: 'KP 10',
+                desc: '填縫專家<br>遠程指導'
+            },
+            youth: {
+                title: '青年學徒<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(部落青年)</span>',
+                badgeAp: 'AP 12',
+                badgeKp: 'KP 0',
+                desc: '快速移動<br>學徒請益'
+            },
+            middle: {
+                title: '協商者<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(中年工匠)</span>',
+                badgeAp: 'AP 8',
+                badgeKp: 'KP 5',
+                desc: '適應現代<br>無工業懲罰'
+            }
+        },
+        placeholderRoom: '輸入 4 碼序號',
+        joinBtn: '加入房間',
+        createBtn: '自己開新房',
+        rulesBtn: '查看遊戲規則與流程',
+        waitingTitle: '等候大廳',
+        waitingRoomLabel: '專屬房間代碼',
+        waitingDesc: '請將上方的代碼分享給好友，讓他們輸入以加入此遊戲！',
+        startBtn: '開始遊戲',
+        leaveBtn: '退出房間',
+        avatar: {
+            title: '✨ 創建你的專屬 3D 角色',
+            dragTip: '🖱 拖曳旋轉 · 滾輪縮放',
+            backBtn: '返回',
+            confirmBtn: '✅ 確認並進入房間',
+            labels: {
+                skin: '🎨 膚色',
+                hair: '💇 髮型',
+                hairColor: '🪮 髮色',
+                eye: '👁 瞳孔顏色',
+                face: '👤 臉型',
+                accessory: '🛡 達悟族禮儀配件',
+                accessorySub: '僅祭典（飛魚祭、大船下水）時配戴',
+                cloth: '👕 達悟族服飾',
+                clothSub: '傳統以白、黑、藍色為主，忌用鮮豔色彩'
+            },
+            skinTitles: {
+                '#C68642': '標準膚色',
+                '#A0622A': '深古銅色',
+                '#8D5524': '深棕色',
+                '#6B3F1F': '深色'
+            },
+            hairOptions: {
+                short: '短直髮',
+                long: '長直髮',
+                bun: '束髻',
+                bald: '光頭'
+            },
+            hairColorTitles: {
+                '#0d0d0d': '烏黑（達悟族傳統）',
+                '#2a1a0a': '深棕黑',
+                '#5a3a1a': '棕色',
+                '#c8c8c8': '銀白（耆老）'
+            },
+            eyeTitles: {
+                '#2a1a08': '深棕（最常見）',
+                '#4a2e10': '棕色',
+                '#7a4820': '琥珀棕',
+                '#1a1a1a': '深黑'
+            },
+            faceOptions: {
+                round: '圓潤臉',
+                square: '寬顎臉',
+                slim: '清秀臉'
+            },
+            accessoryOptions: {
+                none: '無',
+                silver_helmet: '銀盔',
+                rattan_armor: '藤甲',
+                chest_ornament: '胸飾'
+            },
+            accessoryTitles: {
+                silver_helmet: '銀盔：達悟族最神聖禮器，銀片打造成圓錐狀',
+                rattan_armor: '藤甲：由省藤編織，祭典時穿戴防身',
+                chest_ornament: '半月形胸飾：象徵社會地位與成就'
+            },
+            clothOptions: {
+                loincloth: '丁字褲',
+                vest_dark: '黑白背心',
+                ceremony: '祭典全裝'
+            }
+        },
+        game: {
+            sidebarHeader: '👥 部落工匠狀態',
+            logsHeader: '📜 部落記事',
+            chatHeader: '💬 部落頻道',
+            chatPlaceholder: '與島民交流...',
+            chatSendBtn: '傳送',
+            leaveGameBtn: '退出遊戲',
+            leaveConfirm: '確定要退出遊戲嗎？',
+            steps: ['尚未開始', '已剝麻', '已刮絲', '已捻線', '✅ 已完工'],
+            meTag: '你',
+            giveBtn: '🎁 贈材料 (-1 AP)',
+            ap: 'AP:',
+            kp: 'KP:',
+            mat: '材:',
+            progressLabel: '進度',
+            emptyLoc: '無人在此',
+            statusLabels: ['剩餘 AP', 'KP 點數', '持有材料', '造船進度', '總得分'],
+            readyBtnReady: '取消準備 (等候其他玩家...)',
+            readyBtnNotReady: '準備進入下個月',
+            askBtn: '🙏 向耆老請益 <span style="font-size:0.8rem;opacity:0.7;font-weight:normal;">(2 AP → 獲 3 KP)</span>',
+            teachLabel: '選擇學徒',
+            teachBtn: '💡 遠程指導 <span style="font-size:0.8rem;opacity:0.7;font-weight:normal;">(1 AP → 他人獲 1 KP)</span>',
+            locations: {
+                '山林': {
+                    name: '🌲 山林',
+                    badge: '資源區',
+                    desc: '採集 Avaka與蘭嶼花椒的區域',
+                    moveBtn: '移動至此 (1 AP)',
+                    actionBtn: '採集資源 (2 AP)'
+                },
+                '灘頭工作室': {
+                    name: '🛖 灘頭工作室',
+                    badge: '工藝核心',
+                    desc: '造船工序的執行區域，充滿傳統智慧與汗水',
+                    moveBtn: '移動至此 (1 AP)',
+                    steps: {
+                        peel: '① 剝麻 (2 AP)',
+                        scrape: '② 刮絲 (2 AP)',
+                        twine: '③ 捻線 (2 AP | 需 3 KP)',
+                        caulk: '④ 填縫完工 (2 AP | 需 8 KP + 材料)'
+                    }
+                },
+                '商店': {
+                    name: '🏬 現代化商店',
+                    badge: '工業區',
+                    desc: '購買快速但會造成文化斷裂的工業材料',
+                    moveBtn: '移動至此 (1 AP)',
+                    buyBtn: '購買工業樹脂直接完工 (2 AP)'
+                }
+            }
+        },
+        rulesHtml: `
+            <h2>📜 遊戲規則介紹與流程</h2>
+            <div class="rules-scroll-area custom-scrollbar">
+                <p><strong>《Avaka：島嶼的維度》</strong> 是一款關於蘭嶼傳統造船與文化選擇的多人合作與競爭遊戲。您將扮演達悟族的工匠，必須在 12 個月（回合）內完成一艘拼板舟。未在期限內完工將導致文化斷裂（失敗）。</p>
+                
+                <h3>🎯 核心點數與限制</h3>
+                <ul>
+                    <li><strong>⚡ 行動點數 (AP)：</strong> 執行移動、採集、工序等都需要消耗 AP。每個月（回合）初會自動補滿。</li>
+                    <li><strong>💡 技術點數 (KP)：</strong> 代表對傳統工藝的知識。累積足夠的 KP 才能解鎖後期的傳統工序（捻線需 3 KP，填縫需 8 KP）。</li>
+                    <li><strong>⏳ 曆法限制：</strong> 遊戲依循蘭嶼的 12 個月份進行。每個月都會有獨特的氣候或禁忌（如：飛魚祭禁入山林），玩家必須靈活調整策略。</li>
+                </ul>
+
+                <h3>👤 角色能力介紹</h3>
+                <ul>
+                    <li><strong>👑 資深工匠 (耆老)：</strong> 擁有 6 AP 與 10 KP。傳統技藝純熟，執行最終「填縫」不耗 AP；能遠程消耗 1 AP 指導青年獲得 KP。</li>
+                    <li><strong>🏃 青年學徒(部落青年)：</strong> 擁有充沛的 12 AP 與 0 KP。步伐輕快，移動不耗 AP；向耆老「請益」能一次獲得 3 KP。</li>
+                    <li><strong>⚖️ 協商者(中年工匠)：</strong> 擁有 8 AP 與 5 KP。擔任傳統與現代的橋樑，若購買工業材料完工，可獲得額外加分且免除扣分懲罰。</li>
+                </ul>
+
+                <h3>🗺️ 造船路徑流程圖</h3>
+                <div class="css-flowchart">
+                    <div class="fc-node fc-start">開始造船</div>
+                    
+                    <div class="fc-branches">
+                        <div class="fc-branch traditional">
+                            <div class="fc-label">🌟 傳統路線 (高分)</div>
+                            <div class="fc-node">前往 🌲 山林</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">採集素材</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">前往 🛖 灘頭</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">① 剝麻</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">② 刮絲</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">③ 捻線 (需 3 KP)</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">④ 填縫完工 (需 8 KP + 素材)</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-win">傳承成功！</div>
+                        </div>
+                        
+                        <div class="fc-branch modern">
+                            <div class="fc-label">⚠️ 現代化路線 (低分)</div>
+                            <div class="fc-node">前往 🏬 商店</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">購買樹脂</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-lose">完工，但文化流失</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>🏆 結算與傳承</h3>
+                <p>12 個月結束後，系統會結算所有人的「文化韌性總分」。成功走完「傳統路線」將獲得 15 分以上的評價；依賴「現代路線」得分較低（中生代除外）。此外，青年學徒向耆老請益，雙方都能額外獲得傳承的分數，團隊合作才是關鍵！</p>
+            </div>
+            <button id="close-rules-btn" class="btn primary mt-4">我已經完全了解了</button>
+        `
+    },
+    en: {
+        title: ['D','i','m','e','n','s','i','o','n',' ','o','f',' ','t','h','e',' ','I','s','l','a','n','d'],
+        tagline: [
+            '— The Living Plank Boat —',
+            '— Whispers of the Flying Fish Season —',
+            '— Trial of the Inheritors —',
+            '— A Journey in Harmony with Seasons —'
+        ],
+        placeholderName: 'Enter your name...',
+        roleLabel: 'Select Your Role',
+        roles: {
+            elder: {
+                title: 'Elder Artisan<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(Elder)</span>',
+                badgeAp: 'AP 6',
+                badgeKp: 'KP 10',
+                desc: 'Caulking Expert<br>Remote Guiding'
+            },
+            youth: {
+                title: 'Young Apprentice<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(Youth)</span>',
+                badgeAp: 'AP 12',
+                badgeKp: 'KP 0',
+                desc: 'Fast Movement<br>Apprentice Learning'
+            },
+            middle: {
+                title: 'Negotiator<br><span style="font-size:0.8rem; font-weight:normal; opacity:0.8;">(Middle)</span>',
+                badgeAp: 'AP 8',
+                badgeKp: 'KP 5',
+                desc: 'Adapt to Modern<br>No Industrial Penalty'
+            }
+        },
+        placeholderRoom: 'ENTER 4-DIGIT CODE',
+        joinBtn: 'Join Room',
+        createBtn: 'Create Room',
+        rulesBtn: 'View Game Rules & Guide',
+        waitingTitle: 'Waiting Lobby',
+        waitingRoomLabel: 'Exclusive Room Code',
+        waitingDesc: 'Please share the code above with friends to have them join this game!',
+        startBtn: 'Start Game',
+        leaveBtn: 'Leave Lobby',
+        avatar: {
+            title: '✨ Create Your Custom 3D Character',
+            dragTip: '🖱 Drag to Rotate · Scroll to Zoom',
+            backBtn: 'Back',
+            confirmBtn: '✅ Confirm & Enter Room',
+            labels: {
+                skin: '🎨 Skin Color',
+                hair: '💇 Hair Style',
+                hairColor: '🪮 Hair Color',
+                eye: '👁 Eye Color',
+                face: '👤 Face Shape',
+                accessory: '🛡 Tao Ceremonial Accessories',
+                accessorySub: 'Worn only during festivals (Flying Fish Festival, Ship Launch)',
+                cloth: '👕 Tao Clothing',
+                clothSub: 'Traditional colors are white, black, blue; bright colors avoided'
+            },
+            skinTitles: {
+                '#C68642': 'Standard Skin',
+                '#A0622A': 'Deep Bronze',
+                '#8D5524': 'Dark Brown',
+                '#6B3F1F': 'Dark Skin'
+            },
+            hairOptions: {
+                short: 'Short',
+                long: 'Long',
+                bun: 'Bun',
+                bald: 'Bald'
+            },
+            hairColorTitles: {
+                '#0d0d0d': 'Black (Traditional Tao)',
+                '#2a1a0a': 'Dark Brown',
+                '#5a3a1a': 'Brown',
+                '#c8c8c8': 'Silver (Elder)'
+            },
+            eyeTitles: {
+                '#2a1a08': 'Dark Brown (Common)',
+                '#4a2e10': 'Brown',
+                '#7a4820': 'Amber',
+                '#1a1a1a': 'Jet Black'
+            },
+            faceOptions: {
+                round: 'Round',
+                square: 'Square',
+                slim: 'Slim'
+            },
+            accessoryOptions: {
+                none: 'None',
+                silver_helmet: 'Silver Helmet',
+                rattan_armor: 'Rattan Armor',
+                chest_ornament: 'Chest Ornament'
+            },
+            accessoryTitles: {
+                silver_helmet: 'Silver Helmet: Sacred ceremonial object, conical silver plates',
+                rattan_armor: 'Rattan Armor: Woven from rattan, worn for ritual defense',
+                chest_ornament: 'Half-moon Chest Ornament: Symbol of status and achievement'
+            },
+            clothOptions: {
+                loincloth: 'Loincloth',
+                vest_dark: 'B&W Vest',
+                ceremony: 'Ceremonial Vestments'
+            }
+        },
+        game: {
+            sidebarHeader: '👥 Tribe Artisans Status',
+            logsHeader: '📜 Tribe Chronicle',
+            chatHeader: '💬 Tribe Chat',
+            chatPlaceholder: 'Chat with islanders...',
+            chatSendBtn: 'Send',
+            leaveGameBtn: 'Leave Game',
+            leaveConfirm: 'Are you sure you want to leave the game?',
+            steps: ['Not Started', 'Peeled', 'Scraped', 'Twined', '✅ Finished'],
+            meTag: 'You',
+            giveBtn: '🎁 Give Mat (-1 AP)',
+            ap: 'AP:',
+            kp: 'KP:',
+            mat: 'Mat:',
+            progressLabel: 'Progress',
+            emptyLoc: 'No one here',
+            statusLabels: ['Remaining AP', 'KP Points', 'Owned Materials', 'Ship Progress', 'Total Score'],
+            readyBtnReady: 'Cancel Ready (Waiting...)',
+            readyBtnNotReady: 'Ready for Next Month',
+            askBtn: '🙏 Ask Elder <span style="font-size:0.8rem;opacity:0.7;font-weight:normal;">(2 AP → get 3 KP)</span>',
+            teachLabel: 'Select Apprentice',
+            teachBtn: '💡 Guide Apprentice <span style="font-size:0.8rem;opacity:0.7;font-weight:normal;">(1 AP → they get 1 KP)</span>',
+            locations: {
+                '山林': {
+                    name: '🌲 Mountain Forest',
+                    badge: 'Resources',
+                    desc: 'Gather Avaka and Lanyu prickly ash',
+                    moveBtn: 'Move here (1 AP)',
+                    actionBtn: 'Gather (2 AP)'
+                },
+                '灘頭工作室': {
+                    name: '🛖 Beach Workshop',
+                    badge: 'Craft Core',
+                    desc: 'Ship building workspace, filled with traditional wisdom and sweat',
+                    moveBtn: 'Move here (1 AP)',
+                    steps: {
+                        peel: '① Peel Hemp (2 AP)',
+                        scrape: '② Scrape Fiber (2 AP)',
+                        twine: '③ Twine Rope (2 AP | 3 KP)',
+                        caulk: '④ Caulk & Finish (2 AP | 8 KP + Mat)'
+                    }
+                },
+                '商店': {
+                    name: '🏬 Modernized Store',
+                    badge: 'Industrial',
+                    desc: 'Buy fast but culturally disruptive industrial resin',
+                    moveBtn: 'Move here (1 AP)',
+                    buyBtn: 'Buy resin & finish (2 AP)'
+                }
+            }
+        },
+        rulesHtml: `
+            <h2>📜 Game Rules & Process</h2>
+            <div class="rules-scroll-area custom-scrollbar">
+                <p><strong>"Avaka: Dimension of the Island"</strong> is a multiplayer cooperative and competitive game about traditional Tao shipbuilding and cultural choices. You will play as a Tao artisan who must complete a plank boat within 12 months (rounds). Failure to complete it on time results in cultural disruption (failure).</p>
+                
+                <h3>🎯 Core Points & Limits</h3>
+                <ul>
+                    <li><strong>⚡ Action Points (AP):</strong> Consumed by movement, gathering, and crafting. Automatically replenished at the start of each month (round).</li>
+                    <li><strong>💡 Knowledge Points (KP):</strong> Represents understanding of traditional crafts. Sufficient KP is needed to unlock late-stage traditional crafting steps (3 KP for twining, 8 KP for caulking).</li>
+                    <li><strong>⏳ Calendar Limits:</strong> The game follows Lanyu's 12 months. Each month has a unique climate or taboo (e.g., Flying Fish Festival bans mountain access); players must adapt dynamically.</li>
+                </ul>
+
+                <h3>👤 Character Roles</h3>
+                <ul>
+                    <li><strong>👑 Master Artisan (Elder):</strong> Has 6 AP and 10 KP. Proficient in traditional crafts, caulking costs 0 AP; can guide apprentices remotely for 1 AP to grant them KP.</li>
+                    <li><strong>🏃 Young Apprentice (Youth):</strong> Has 12 AP and 0 KP. Light-footed, movement costs 0 AP; learning from the Elder grants 3 KP instantly.</li>
+                    <li><strong>⚖️ Negotiator (Middle):</strong> Has 8 AP and 5 KP. Bridges the traditional and modern. Finishing with industrial materials grants bonus score without penalty.</li>
+                </ul>
+
+                <h3>🗺️ Shipbuilding Flowchart</h3>
+                <div class="css-flowchart">
+                    <div class="fc-node fc-start">Start Building</div>
+                    
+                    <div class="fc-branches">
+                        <div class="fc-branch traditional">
+                            <div class="fc-label">🌟 Traditional Path (High Score)</div>
+                            <div class="fc-node">Go to 🌲 Forest</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">Gather Fibers</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">Go to 🛖 Workshop</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">① Peel Hemp</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">② Scrape Fiber</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">③ Twine (Needs 3 KP)</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">④ Caulk & Finish (8 KP + Mat)</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-win">Heritage Succeeded!</div>
+                        </div>
+                        
+                        <div class="fc-branch modern">
+                            <div class="fc-label">⚠️ Modern Path (Low Score)</div>
+                            <div class="fc-node">Go to 🏬 Store</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node">Buy Resin</div>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-lose">Finished with Cultural Loss</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>🏆 Scoring & Heritage</h3>
+                <p>After 12 months, the system settles everyone's "Cultural Resilience Total Score". Successfully completing the traditional path yields 15+ points; relying on the modern path scores lower (except for the Negotiator). Moreover, learning from the Elder rewards both players with heritage scores—cooperation is key!</p>
+            </div>
+            <button id="close-rules-btn" class="btn primary mt-4">I understand completely</button>
+        `
+    }
+};
+
+function translateLocationName(loc) {
+    if (currentLang === 'en') {
+        if (loc === '山林') return 'Mountain Forest';
+        if (loc === '灘頭工作室') return 'Beach Workshop';
+        if (loc === '商店') return 'Modernized Store';
+    }
+    return loc;
+}
+
+function translateLog(logText) {
+    if (currentLang !== 'en') return logText;
+    
+    // Replace names of locations
+    let translated = logText
+        .replace(/山林/g, 'Mountain Forest')
+        .replace(/灘頭工作室/g, 'Beach Workshop')
+        .replace(/商店/g, 'Modernized Store');
+        
+    // Replace names of roles
+    translated = translated
+        .replace(/資深工匠 \(耆老\)/g, 'Elder Artisan')
+        .replace(/文化青年/g, 'Young Apprentice')
+        .replace(/中生代/g, 'Negotiator');
+        
+    // Replace typical action sentences
+    const patterns = [
+        { regex: /(.+) 加入了房間，扮演 (.+)/, replace: '$1 joined the room as $2' },
+        { regex: /(.+) 斷線了/, replace: '$1 disconnected' },
+        { regex: /(.+) 離開了房間/, replace: '$1 left the room' },
+        { regex: /遊戲開始！第 1 個月：Kashyman/, replace: 'Game started! Month 1: Kashyman' },
+        { regex: /(.+) 移動到了 (.+)/, replace: '$1 moved to $2' },
+        { regex: /(.+) 採集了 (\d+) 份素材/, replace: '$1 gathered $2 material(s)' },
+        { regex: /(.+) 完成了 剝麻/, replace: '$1 completed peeling hemp' },
+        { regex: /(.+) 完成了 刮絲/, replace: '$1 completed scraping fiber' },
+        { regex: /(.+) 完成了 捻線/, replace: '$1 completed twining rope' },
+        { regex: /(.+) 完美傳承了造船技術！獲得 (\d+) 分/, replace: '$1 perfectly inherited shipbuilding skills! Gained $2 points' },
+        { regex: /(.+) 使用現代材料完工，文化流失了\.\.\./, replace: '$1 finished using modernized materials, cultural heritage was lost...' },
+        { regex: /(.+) 向部落長輩請益，獲得 3 KP/, replace: '$1 learned from the Elder, gained 3 KP' },
+        { regex: /(.+) 因傳承指導獲得 1 分/, replace: '$1 gained 1 point for heritage guidance' },
+        { regex: /(.+) 遠程指導了 (.+)/, replace: '$1 remotely guided $2' },
+        { regex: /🤝 (.+) 消耗了 1 AP，將 1 份材料送給了 (.+)！/, replace: '🤝 $1 spent 1 AP to give 1 material to $2!' },
+        { regex: /⏳ (.+) 已準備好/, replace: '⏳ $1 is ready' },
+        { regex: /⏳ (.+) 取消了準備/, replace: '⏳ $1 canceled ready' },
+        { regex: /一年結束，遊戲結算！/, replace: 'Year ended, game settlement!' },
+        { regex: /進入第 (\d+) 個月：(.+)。。?/, replace: 'Entering Month $1: $2.' },
+        { regex: /進入第 (\d+) 個月：(.+)/, replace: 'Entering Month $1: $2' },
+        { regex: /梅雨腐蝕：(.+) 消耗 1 AP 保護灘頭的材料免於腐爛。/, replace: 'Plum Rain: $1 spent 1 AP to protect materials at the beach from rotting.' },
+        { regex: /梅雨腐蝕：(.+) 未及時保護，曝曬中的材料腐爛歸零了！/, replace: 'Plum Rain: $1 failed to protect materials, exposed materials rotted to zero!' },
+        { regex: /祭神月傳承：(.+) 獲得 2 KP/, replace: 'Sacred Month Heritage: $1 gained 2 KP' }
+    ];
+    
+    for (const p of patterns) {
+        if (p.regex.test(translated)) {
+            translated = translated.replace(p.regex, p.replace);
+            break;
+        }
+    }
+    
+    return translated;
+}
+
+function translateScoreBreakdown(breakdown) {
+    if (currentLang !== 'en') return breakdown;
+    return breakdown.map(item => {
+        return item
+            .replace(/傳統 Avaka/g, 'Traditional Avaka')
+            .replace(/工業材料/g, 'Industrial Materials')
+            .replace(/傳承指導/g, 'Heritage Guidance');
+    });
+}
+
+function applyLanguage() {
+    const t = translations[currentLang];
+    
+    // 1. Update Main Title
+    const glowTextEl = document.querySelector('.glow-text');
+    if (glowTextEl) {
+        glowTextEl.innerHTML = '';
+        if (currentLang === 'en') {
+            glowTextEl.classList.add('lang-en');
+            const words = ['Dimension', 'of', 'the', 'Island'];
+            words.forEach(w => {
+                const s = document.createElement('span');
+                s.textContent = w;
+                glowTextEl.appendChild(s);
+            });
+        } else {
+            glowTextEl.classList.remove('lang-en');
+            t.title.forEach(char => {
+                const s = document.createElement('span');
+                s.textContent = char;
+                glowTextEl.appendChild(s);
+            });
+        }
+    }
+    
+    // 2. Restart Tagline Animation
+    const titleTaglineEl = document.querySelector('.title-tagline');
+    if (titleTaglineEl) {
+        if (taglineInstance) {
+            taglineInstance.destroy();
+        }
+        taglineInstance = new TextType(titleTaglineEl, {
+            text: t.tagline,
+            typingSpeed: currentLang === 'en' ? 70 : 100,
+            deletingSpeed: 40,
+            pauseDuration: 3000,
+            loop: true,
+            showCursor: true,
+            cursorCharacter: '▎',
+            textColors: [
+                '#d4af37', // Gold
+                '#38bdf8', // Blue
+                '#34d399', // Green
+                '#a78bfa'  // Purple
+            ],
+            variableSpeed: currentLang === 'en' ? { min: 40, max: 90 } : { min: 60, max: 140 }
+        });
+    }
+    
+    // 3. Translate Join Section Elements
+    const nameInput = document.getElementById('player-name');
+    if (nameInput) nameInput.placeholder = t.placeholderName;
+    
+    const roleSelector = document.querySelector('.role-selector');
+    if (roleSelector && roleSelector.previousElementSibling) {
+        roleSelector.previousElementSibling.textContent = t.roleLabel;
+    }
+    
+    // Translate Role Cards
+    const roleOptions = document.querySelectorAll('.role-option');
+    roleOptions.forEach(opt => {
+        const role = opt.dataset.role;
+        const roleData = t.roles[role];
+        if (roleData) {
+            opt.querySelector('h3').innerHTML = roleData.title;
+            opt.querySelector('.ap-badge').textContent = roleData.badgeAp;
+            opt.querySelector('.kp-badge').textContent = roleData.badgeKp;
+            opt.querySelector('small').innerHTML = roleData.desc;
+        }
+    });
+    
+    const roomInput = document.getElementById('room-code');
+    if (roomInput) roomInput.placeholder = t.placeholderRoom;
+    
+    const jBtn = document.getElementById('join-btn');
+    if (jBtn) jBtn.textContent = t.joinBtn;
+    
+    const cBtn = document.getElementById('create-btn');
+    if (cBtn) cBtn.textContent = t.createBtn;
+    
+    const rBtn = document.getElementById('open-rules-btn');
+    if (rBtn) rBtn.textContent = t.rulesBtn;
+    
+    // 4. Translate Waiting Section Elements
+    const waitingSection = document.getElementById('waiting-section');
+    if (waitingSection) {
+        const waitingH2 = waitingSection.querySelector('h2');
+        if (waitingH2) waitingH2.textContent = t.waitingTitle;
+        
+        const waitingRoomCodeLabel = waitingSection.querySelector('span');
+        if (waitingRoomCodeLabel) waitingRoomCodeLabel.textContent = t.waitingRoomLabel;
+        
+        const waitingP = waitingSection.querySelector('p');
+        if (waitingP) waitingP.textContent = t.waitingDesc;
+    }
+    
+    const sBtn = document.getElementById('start-game-btn');
+    if (sBtn) sBtn.textContent = t.startBtn;
+    
+    const lBtn = document.getElementById('leave-lobby-btn');
+    if (lBtn) lBtn.textContent = t.leaveBtn;
+
+    // 5. Translate Avatar Creator Screen
+    const avatarScreenH2 = document.querySelector('#avatar-screen h2');
+    if (avatarScreenH2) avatarScreenH2.textContent = t.avatar.title;
+    
+    const avatarDragTip = document.querySelector('#avatar-screen p[style*="text-align:center"]');
+    if (avatarDragTip) avatarDragTip.textContent = t.avatar.dragTip;
+    
+    const avBack = document.getElementById('avatar-back-btn');
+    if (avBack) avBack.textContent = t.avatar.backBtn;
+    
+    const avConfirm = document.getElementById('avatar-confirm-btn');
+    if (avConfirm) avConfirm.textContent = t.avatar.confirmBtn;
+    
+    // Translate Labels & Options
+    const ctrlGroups = document.querySelectorAll('.avatar-ctrl-group');
+    ctrlGroups.forEach(group => {
+        const label = group.querySelector('.avatar-ctrl-label');
+        if (!label) return;
+        
+        const txt = label.textContent.trim();
+        if (txt.includes('膚色') || txt.includes('Skin')) {
+            label.textContent = t.avatar.labels.skin;
+            group.querySelectorAll('.swatch').forEach(sw => {
+                const val = sw.dataset.val;
+                if (t.avatar.skinTitles[val]) sw.title = t.avatar.skinTitles[val];
+            });
+        } else if (txt.includes('髮型') || txt.includes('Hair Style')) {
+            label.textContent = t.avatar.labels.hair;
+            group.querySelectorAll('.avatar-opt').forEach(opt => {
+                const val = opt.dataset.val;
+                if (t.avatar.hairOptions[val]) opt.textContent = t.avatar.hairOptions[val];
+            });
+        } else if (txt.includes('髮色') || txt.includes('Hair Color')) {
+            label.textContent = t.avatar.labels.hairColor;
+            group.querySelectorAll('.swatch').forEach(sw => {
+                const val = sw.dataset.val;
+                if (t.avatar.hairColorTitles[val]) sw.title = t.avatar.hairColorTitles[val];
+            });
+        } else if (txt.includes('瞳孔') || txt.includes('Eye Color')) {
+            label.textContent = t.avatar.labels.eye;
+            group.querySelectorAll('.swatch').forEach(sw => {
+                const val = sw.dataset.val;
+                if (t.avatar.eyeTitles[val]) sw.title = t.avatar.eyeTitles[val];
+            });
+        } else if (txt.includes('臉型') || txt.includes('Face Shape')) {
+            label.textContent = t.avatar.labels.face;
+            group.querySelectorAll('.avatar-opt').forEach(opt => {
+                const val = opt.dataset.val;
+                if (t.avatar.faceOptions[val]) opt.textContent = t.avatar.faceOptions[val];
+            });
+        } else if (txt.includes('禮儀') || txt.includes('Ceremonial')) {
+            label.textContent = t.avatar.labels.accessory;
+            const sub = group.querySelector('div');
+            if (sub) sub.textContent = t.avatar.labels.accessorySub;
+            group.querySelectorAll('.avatar-opt').forEach(opt => {
+                const val = opt.dataset.val;
+                if (t.avatar.accessoryOptions[val]) opt.textContent = t.avatar.accessoryOptions[val];
+                if (t.avatar.accessoryTitles[val]) {
+                    opt.title = t.avatar.accessoryTitles[val];
+                } else {
+                    opt.removeAttribute('title');
+                }
+            });
+        } else if (txt.includes('服飾') || txt.includes('Clothing')) {
+            label.textContent = t.avatar.labels.cloth;
+            const sub = group.querySelector('div');
+            if (sub) sub.textContent = t.avatar.labels.clothSub;
+            group.querySelectorAll('.avatar-opt').forEach(opt => {
+                const val = opt.dataset.val;
+                if (t.avatar.clothOptions[val]) opt.textContent = t.avatar.clothOptions[val];
+            });
+        }
+    });
+
+    if (pendingRoomAction && pendingRoomAction.data && pendingRoomAction.data.role) {
+        const avatarRoleName = document.getElementById('avatar-role-name-label');
+        if (avatarRoleName) {
+            avatarRoleName.textContent = AVATAR_ROLE_LABELS[currentLang][pendingRoomAction.data.role] || '';
+        }
+    }
+
+    // 6. Translate Game Screen Static Elements
+    const gameSidebarH3 = document.querySelector('.sidebar h3');
+    if (gameSidebarH3) gameSidebarH3.textContent = t.game.sidebarHeader;
+    
+    const gameLogsH3 = document.querySelector('.sys-logs h3');
+    if (gameLogsH3) gameLogsH3.textContent = t.game.logsHeader;
+    
+    const gameChatH3 = document.querySelector('.chat-section h3');
+    if (gameChatH3) gameChatH3.textContent = t.game.chatHeader;
+    
+    const gameChatInput = document.getElementById('chat-input');
+    if (gameChatInput) gameChatInput.placeholder = t.game.chatPlaceholder;
+    
+    const gameChatSendBtn = document.getElementById('chat-send-btn');
+    if (gameChatSendBtn) gameChatSendBtn.textContent = t.game.chatSendBtn;
+    
+    const gameLeaveBtn = document.getElementById('leave-game-btn');
+    if (gameLeaveBtn) gameLeaveBtn.textContent = t.game.leaveGameBtn;
+    
+    const gameRulesLoreBtn = document.getElementById('open-lore-btn');
+    if (gameRulesLoreBtn) gameRulesLoreBtn.textContent = currentLang === 'en' ? '📖 Lore Details' : '📖 夜曆細節';
+    
+    const gameCloseLoreBtn = document.getElementById('close-lore-btn');
+    if (gameCloseLoreBtn) gameCloseLoreBtn.textContent = currentLang === 'en' ? 'Close' : '關閉';
+
+    // Translate Location Cards
+    for (const [locKey, locData] of Object.entries(t.game.locations)) {
+        const card = document.querySelector(`.location-card[data-loc="${locKey}"]`);
+        if (!card) continue;
+        
+        const h3 = card.querySelector('h3');
+        if (h3) h3.textContent = locData.name;
+        
+        const badge = card.querySelector('.badge');
+        if (badge) {
+            badge.textContent = locData.badge;
+        }
+        
+        const desc = card.querySelector('.desc');
+        if (desc) desc.textContent = locData.desc;
+        
+        const moveBtn = card.querySelector('.move-btn');
+        if (moveBtn) moveBtn.textContent = locData.moveBtn;
+        
+        if (locKey === '山林') {
+            const gatherBtn = card.querySelector('.gather-btn');
+            if (gatherBtn) gatherBtn.textContent = locData.actionBtn;
+        } else if (locKey === '灘頭工作室') {
+            const peelBtn = card.querySelector('.craft-btn[data-step="peel"]');
+            if (peelBtn) peelBtn.textContent = locData.steps.peel;
+            
+            const scrapeBtn = card.querySelector('.craft-btn[data-step="scrape"]');
+            if (scrapeBtn) scrapeBtn.textContent = locData.steps.scrape;
+            
+            const twineBtn = card.querySelector('.craft-btn[data-step="twine"]');
+            if (twineBtn) twineBtn.textContent = locData.steps.twine;
+            
+            const caulkBtn = card.querySelector('.craft-btn[data-step="caulk"]');
+            if (caulkBtn) caulkBtn.textContent = locData.steps.caulk;
+        } else if (locKey === '商店') {
+            const buyBtn = card.querySelector('.buy-btn');
+            if (buyBtn) buyBtn.textContent = locData.buyBtn;
+        }
+    }
+    
+    // Translate Special Actions Panel
+    const askBtnEl = document.getElementById('ask-btn');
+    if (askBtnEl) askBtnEl.innerHTML = t.game.askBtn;
+    
+    const teachSelectLabel = document.querySelector('.teach-box-premium span');
+    if (teachSelectLabel) teachSelectLabel.textContent = t.game.teachLabel;
+    
+    const teachBtnEl = document.getElementById('teach-btn');
+    if (teachBtnEl) teachBtnEl.innerHTML = t.game.teachBtn;
+
+    // 7. Translate Rules Modal
+    const rulesModalContent = document.querySelector('#rules-modal .modal-content');
+    if (rulesModalContent) {
+        rulesModalContent.innerHTML = t.rulesHtml;
+    }
+}
+
+
 // DOM Elements
 const lobbyScreen = document.getElementById('lobby');
 const gameScreen = document.getElementById('game');
@@ -53,64 +1044,85 @@ let myId = null;
 let currentDisplayedMonth = 0;
 let pendingRoomAction = null;
 let currentAvatarSelections = {};
+let lastGameState = null;
 let lightRaysInstance = null;
 let prismaticBurstInstance = null;
 
-const AVATAR_ROLE_LABELS = {
-    elder: '資深工匠 — 為你的角色打造專屬外型',
-    youth: '青年學徒(部落青年) — 為你的角色打造專屬外型',
-    middle: '協商者(中年工匠) — 為你的角色打造專屬外型'
-};
+
 
 
 const scriptEvents = {
     2: {
-        title: "【封山危機】遺忘儲備的代價",
-        dialogues: [
+        title_zh: "【封山危機】遺忘儲備的代價",
+        title_en: "【Mountain Closure】Price of Forgetting to Stockpile",
+        dialogues_zh: [
             { role: "青年學徒(部落青年)", text: "糟了！我的 Avaka 原料用完了，但現在上山會觸犯禁忌……" },
             { role: "協商者(中年工匠)", text: "這就是為什麼老人家說 Kashyman 月要拼命存貨。現在你只能跟我去商店買尼龍繩，或者枯等一個月，看著進度落後。" }
         ],
-        desc: "【飛魚禁令】部落灘頭已舉行招魚祭，整個月門戶關閉。為了尊重魚靈，所有男人禁止進入山林，無法執行「採集」！\n💡 提示：你可以請同區域的隊友使用「贈與」功能支援你材料。"
+        dialogues_en: [
+            { role: "Young Apprentice (Youth)", text: "Oh no! I'm out of Avaka, but entering the mountains now is forbidden..." },
+            { role: "Negotiator (Middle)", text: "This is why the elders said to stock up in Kashyman. Now you can only buy nylon rope at the store, or wait a month and fall behind." }
+        ],
+        desc_zh: "【飛魚禁令】部落灘頭已舉行招魚祭，整個月門戶關閉。為了尊重魚靈，所有男人禁止進入山林，無法執行「採集」！\n💡 提示：你可以請同區域的隊友使用「贈與」功能支援你材料。",
+        desc_en: "【Flying Fish Ban】The beach ritual is active. All men are banned from entering the mountains. Cannot perform 'Gathering'!\n💡 Tip: Ask teammates in the same area to use 'Give Mat' to support you."
     },
     5: {
-        title: "【梅雨腐蝕】時間與天氣的賽跑",
-        dialogues: [
+        title_zh: "【梅雨腐蝕】時間與天氣的賽跑",
+        title_en: "【Plum Rain Erosion】Race Against Time and Weather",
+        dialogues_zh: [
             { role: "系統", text: "天空陰雲密佈，突如其來的降雨讓你在灘頭曝曬的 Avaka 纖維陷入腐爛危機。" },
             { role: "耆老", text: "孩子，做船不能只看地上的麻，要看天上的雲。快收起來！" }
         ],
-        desc: "【梅雨季節】為了保護放在灘頭的材料，擁有材料的玩家將在本月被自動扣除 1 AP 作為維護費。若 AP 不足，材料將會受潮損壞歸零！"
+        dialogues_en: [
+            { role: "System", text: "Clouds gather. A sudden downpour puts your drying Avaka fiber at risk of rotting." },
+            { role: "Elder", text: "Child, building a boat is not just about the hemp on the ground, but the clouds in the sky. Hurry, pack it up!" }
+        ],
+        desc_zh: "【梅雨季節】為了保護放在灘頭的材料，擁有材料的玩家將在本月被自動扣除 1 AP 作為維護費。若 AP 不足，材料將會受潮損壞歸零！",
+        desc_en: "【Plum Rain Season】To protect materials, players with stockpiled fibers will lose 1 AP for maintenance. If AP is insufficient, materials will rot to zero!"
     },
     10: {
-        title: "【禁忌之月】心理韌性的考驗",
-        dialogues: [
+        title_zh: "【禁忌之月】心理韌性的考驗",
+        title_en: "【Forbidden Month】A Test of Resilience",
+        dialogues_zh: [
             { role: "協商者(中年工匠)", text: "這就是『儀式時間』的邏輯。你得學會等待。如果你現在強行完工，這艘船在部落眼中將失去靈魂。" },
             { role: "青年學徒(部落青年)", text: "但我只剩兩個月就要結算了！如果不現在做，我怕來不及完成……" }
         ],
-        desc: "【大凶之月】這是專門製作貝灰的月份，不允許造屋或落成禮。本月絕對無法執行「填縫（完工）」。\n💡 提示：趁這段時間多向長輩「請益」累積 KP 吧！"
+        dialogues_en: [
+            { role: "Negotiator (Middle)", text: "This is the logic of 'Ceremonial Time'. You must learn to wait. Finishing the ship now will make it soulless to the tribe." },
+            { role: "Young Apprentice (Youth)", text: "But I only have two months left! If I don't do it now, I'm afraid I won't finish in time..." }
+        ],
+        desc_zh: "【大凶之月】這是專門製作貝灰的月份，不允許造屋或落成禮。本月絕對無法執行「填縫（完工）」。\n💡 提示：趁這段時間多向長輩「請益」累積 KP 吧！",
+        desc_en: "【Taboo Month】This month is dedicated to shell lime burning. Building and launches are banned. Cannot execute 'Caulking (Finish Ship)'!\n💡 Tip: Use this time to 'Learn' from the Elder and build KP!"
     },
     12: {
-        title: "【最終衝刺】祖先的祝福",
-        dialogues: [
+        title_zh: "【最終衝刺】祖先的祝福",
+        title_en: "【Final Sprint】Blessing of the Ancestors",
+        dialogues_zh: [
             { role: "系統", text: "這是屬於手工藝的月份。雖然時間緊迫，但你發現自己的手感前所未有的流暢。" },
             { role: "耆老", text: "看吧，只要你順應時序，土地會給你最後的補償。快動手，讓這條船趕在明年飛魚祭前下水！" }
         ],
-        desc: "【技術精進】本月執行「捻線」工序將不再消耗任何 AP！請把握最後的機會完成拼板舟。"
+        dialogues_en: [
+            { role: "System", text: "This is the month of handicraft. Though time is short, your hands move smoother than ever." },
+            { role: "Elder", text: "Look, as long as you follow the calendar, the land will reward you. Hurry, let's launch this boat before next year's festival!" }
+        ],
+        desc_zh: "【技術精進】本月執行「捻線」工序將不再消耗 any AP！請把握最後的機會完成拼板舟。",
+        desc_en: "【Craft mastery】Twining rope costs 0 AP this month! Seize this final opportunity to complete your boat."
     }
 };
 
 const GAME_RULES = [
-    {name: "Kashyman", desc: "準備月: 移動不消耗 AP。"},
-    {name: "Kapowan", desc: "飛魚禁令: 禁止進入山林，無法採集。"},
-    {name: "Pikaokaod", desc: "捕撈飛魚盛期: 在灘頭執行工序 AP 消耗減 1。"},
-    {name: "Papataw", desc: "男人勤於出海: 請益消耗 AP 加倍 (需 4 AP)。"},
-    {name: "Pipilapila", desc: "梅雨季節: 請注意 AP 管理。"},
-    {name: "Apiya vehan", desc: "好月節: 執行填縫額外 +2 分。"},
-    {name: "Pehhakow", desc: "解禁重啟: 山林開放，採集獲 2 份材料。"},
-    {name: "Pitanatana", desc: "土器月: 科學轉譯必成功 (可維修獎勵)。"},
-    {name: "Kalimman", desc: "飛魚終食祭: 商店材料價格加倍。"},
-    {name: "Kaneman", desc: "禁忌之月: 無法執行完工 (填縫)。"},
-    {name: "Kapitowan", desc: "祭神月: 青年與耆老同區域，KP 自動 +2。"},
-    {name: "Kaowan", desc: "手工藝月: 捻線不再消耗 AP。"}
+    {name: "Kashyman", desc_zh: "準備月: 移動不消耗 AP。", desc_en: "Prep Month: Movement costs 0 AP."},
+    {name: "Kapowan", desc_zh: "飛魚禁令: 禁止進入山林，無法採集。", desc_en: "Flying Fish Ban: Forest closed. Cannot gather."},
+    {name: "Pikaokaod", desc_zh: "捕撈飛魚盛期: 在灘頭執行工序 AP 消耗減 1。", desc_en: "Peak Fishing: Crafting at beach costs -1 AP."},
+    {name: "Papataw", desc_zh: "男人勤於出海: 請益消耗 AP 加倍 (需 4 AP)。", desc_en: "Men at Sea: Learning from Elder costs double AP (4 AP)."},
+    {name: "Pipilapila", desc_zh: "梅雨季節: 請注意 AP 管理。", desc_en: "Plum Rain Season: Watch out for AP maintenance fees."},
+    {name: "Apiya vehan", desc_zh: "好月節: 執行填縫額外 +2 分。", desc_en: "Good Month Festival: Caulking grants +2 bonus score."},
+    {name: "Pehhakow", desc_zh: "解禁重啟: 山林開放，採集獲 2 份材料。", desc_en: "Forest Reopened: Gathering yields 2x materials."},
+    {name: "Pitanatana", desc_zh: "土器月: 科學轉譯必成功 (可維修獎勵)。", desc_en: "Clay Vessel Month: Tech translation always succeeds."},
+    {name: "Kalimman", desc_zh: "飛魚終食祭: 商店材料價格加倍。", desc_en: "Final Fish Feast: Store prices are doubled."},
+    {name: "Kaneman", desc_zh: "禁忌之月: 無法執行完工 (填縫)。", desc_en: "Forbidden Month: Caulking (finishing ship) is strictly banned."},
+    {name: "Kapitowan", desc_zh: "祭神月: 青年與耆老同區域，KP 自動 +2。", desc_en: "Sacred Month: Apprentice in same area as Elder gets +2 KP."},
+    {name: "Kaowan", desc_zh: "手工藝月: 捻線不再消耗 AP。", desc_en: "Handicraft Month: Twining fiber costs 0 AP."}
 ];
 
 function showMonthEventModal(month) {
@@ -122,8 +1134,13 @@ function showMonthEventModal(month) {
     modal.className = 'modal-overlay active';
     modal.style.zIndex = '3000';
     
-    let title = ev ? ev.title : `第 ${month} 個月：${rule.name}`;
-    let desc = ev ? ev.desc : `【本月規則】\n${rule.desc}`;
+    const isEn = currentLang === 'en';
+    let title = ev 
+        ? (isEn ? ev.title_en : ev.title_zh) 
+        : (isEn ? `Month ${month}: ${rule.name}` : `第 ${month} 個月：${rule.name}`);
+    let desc = ev 
+        ? (isEn ? ev.desc_en : ev.desc_zh) 
+        : (isEn ? `【Monthly Rule】\n${rule.desc_en}` : `【本月規則】\n${rule.desc_zh}`);
     
     let html = `
         <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem; text-align: left; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
@@ -131,25 +1148,35 @@ function showMonthEventModal(month) {
             <div style="display:flex; flex-direction:column; gap: 1rem; margin-bottom: 2rem;">
     `;
     
-    if (ev && ev.dialogues) {
-        ev.dialogues.forEach(d => {
-            const isSys = d.role === '系統';
-            const color = isSys ? 'var(--text-muted)' : (d.role === '青年學徒(部落青年)' ? '#4CAF50' : (d.role === '耆老' ? '#FFC107' : '#03A9F4'));
-            html += `
-                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border-left: 4px solid ${color};">
-                    <strong style="color: ${color}; display: block; margin-bottom: 0.3rem;">${d.role}</strong>
-                    <span style="line-height: 1.6;">${d.text}</span>
-                </div>
-            `;
-        });
+    if (ev) {
+        const dialogues = isEn ? ev.dialogues_en : ev.dialogues_zh;
+        if (dialogues) {
+            dialogues.forEach(d => {
+                const isSys = d.role === '系統' || d.role === 'System';
+                let color = 'var(--text-muted)';
+                if (!isSys) {
+                    if (d.role.includes('青年') || d.role.includes('Apprentice')) color = '#4CAF50';
+                    else if (d.role.includes('耆老') || d.role.includes('Elder')) color = '#FFC107';
+                    else color = '#03A9F4';
+                }
+                html += `
+                    <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border-left: 4px solid ${color};">
+                        <strong style="color: ${color}; display: block; margin-bottom: 0.3rem;">${d.role}</strong>
+                        <span style="line-height: 1.6;">${d.text}</span>
+                    </div>
+                `;
+            });
+        }
     }
+    
+    const btnText = isEn ? 'I Understand' : '我明白了';
     
     html += `
             </div>
             <div style="background: rgba(244, 67, 54, 0.1); border: 1px solid var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
                 <p style="color: #ffcdd2; font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">${desc}</p>
             </div>
-            <button class="btn primary glow-btn" style="width: 100%;" onclick="this.closest('.modal-overlay').remove()">我明白了</button>
+            <button class="btn primary glow-btn" style="width: 100%;" onclick="this.closest('.modal-overlay').remove()">${btnText}</button>
         </div>
     `;
     modal.innerHTML = html;
@@ -157,10 +1184,13 @@ function showMonthEventModal(month) {
 }
 
 // Rules Modal
-openRulesBtn.addEventListener('click', () => {
-    rulesModal.classList.add('active');
+document.addEventListener('click', (e) => {
+    if (e.target.id === 'open-rules-btn' || e.target.closest('#open-rules-btn')) {
+        document.getElementById('rules-modal').classList.add('active');
+    } else if (e.target.id === 'close-rules-btn' || e.target.closest('#close-rules-btn')) {
+        document.getElementById('rules-modal').classList.remove('active');
+    }
 });
-closeRulesBtn.addEventListener('click', () => rulesModal.classList.remove('active'));
 
 // Role Selection
 roleOptions.forEach(opt => {
@@ -226,6 +1256,26 @@ document.addEventListener('DOMContentLoaded', () => {
             distortion: 0.08
         });
     }
+
+    // Initialize Language Switcher click listener
+    const langBtn = document.getElementById('lang-btn');
+    if (langBtn) {
+        langBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            applyLanguage();
+            playActionSound();
+            if (lastGameState) {
+                if (lastGameState.started) {
+                    renderGame(lastGameState);
+                } else {
+                    renderLobby(lastGameState);
+                }
+            }
+        });
+    }
+
+    // Apply active language configuration on launch
+    applyLanguage();
 
     // Background Effects Spawners
     function spawnLeaf() {
@@ -354,19 +1404,19 @@ avatarConfirmBtn.addEventListener('click', () => {
     if (!pendingRoomAction) return;
     
     const snapshot = captureAvatarSnapshot();
-    const faceLabels  = {round:'圓潤臉', square:'寬顎臉', slim:'清秀臉'};
-    const hairLabels  = {short:'短直髮', long:'長直髮', bun:'束髻', bald:'光頭'};
-    const accLabels   = {none:'', silver_helmet:'銀盔', rattan_armor:'藤甲', chest_ornament:'胸飾'};
-    const clothLabels = {loincloth:'丁字褲', vest_dark:'黑白背心', ceremony:'祭典全裝'};
+    const faceLabels  = currentLang === 'en' ? {round:'Round', square:'Square', slim:'Slim'} : {round:'圓潤臉', square:'寬顎臉', slim:'清秀臉'};
+    const hairLabels  = currentLang === 'en' ? {short:'Short', long:'Long', bun:'Bun', bald:'Bald'} : {short:'短直髮', long:'長直髮', bun:'束髻', bald:'光頭'};
+    const accLabels   = currentLang === 'en' ? {none:'', silver_helmet:'Silver Helmet', rattan_armor:'Rattan Armor', chest_ornament:'Chest Ornament'} : {none:'', silver_helmet:'銀盔', rattan_armor:'藤甲', chest_ornament:'胸飾'};
+    const clothLabels = currentLang === 'en' ? {loincloth:'Loincloth', vest_dark:'B&W Vest', ceremony:'Ceremonial'} : {loincloth:'丁字褲', vest_dark:'黑白背心', ceremony:'祭典全裝'};
     
     const avatarData = {
         image: snapshot,
         icon: '🧑',
         traits: [
-            '髮型:' + hairLabels[avatarState.hair],
-            '臉型:' + faceLabels[avatarState.face],
-            '服飾:' + clothLabels[avatarState.cloth],
-            avatarState.accessory !== 'none' ? '配件:' + accLabels[avatarState.accessory] : null
+            (currentLang === 'en' ? 'Hair: ' : '髮型:') + hairLabels[avatarState.hair],
+            (currentLang === 'en' ? 'Face: ' : '臉型:') + faceLabels[avatarState.face],
+            (currentLang === 'en' ? 'Clothing: ' : '服飾:') + clothLabels[avatarState.cloth],
+            avatarState.accessory !== 'none' ? (currentLang === 'en' ? 'Acc: ' : '配件:') + accLabels[avatarState.accessory] : null
         ].filter(Boolean)
     };
     
@@ -389,7 +1439,8 @@ leaveLobbyBtn.addEventListener('click', () => {
 });
 
 leaveGameBtn.addEventListener('click', () => {
-    if(confirm('確定要退出遊戲嗎？')) {
+    const isEn = currentLang === 'en';
+    if(confirm(isEn ? 'Are you sure you want to leave the game?' : '確定要退出遊戲嗎？')) {
         socket.emit('leave_game');
         location.reload();
     }
@@ -413,6 +1464,7 @@ socket.on('error', (err) => {
 });
 
 socket.on('state_update', (state) => {
+    lastGameState = state;
     if (!state.started && Object.keys(state.players).length > 0 && state.month > 12) {
         // Game Over
         renderGameOver(state);
@@ -493,18 +1545,78 @@ function showToast(msg) {
 // Lore Data and Modal Logic
 const monthLoreData = [
     null,
-    { title: "【迎接魚季與社交】", desc: "● 祭儀：舉行「立春」儀式與「孝敬父母日」。進行殺豬祭儀，將豬肉分享給祖先以祈求出海平安。<br><br>● 勞動：準備捕魚工具、採集材料、修補大船、理髮。" },
-    { title: "【禁忌與正式招魚】", desc: "● 祭儀：舉行正式的招飛魚祭 (Manlag)。紅頭部落於初二開始。東清部落會焚燒蘆葦莖製作火把。<br><br>● 文化：進入禁慾期（Paneneb），男船員在共宿屋（Panragan）集體生活以防寒並防止私會婦女。<br><br>● 勞動：上山砍伐曬魚架材料；開始夜間火把捕魚。" },
-    { title: "【全力捕撈與放寬】", desc: "● 祭儀：大船船組解散，男人可回原家屋睡覺。<br><br>● 文化：捕獲的飛魚可帶回家中煮熟處理，並塗抹鹽巴晾曬。<br><br>● 勞動：全力捕撈飛魚；婦女開始到山上採集陸蟹。" },
-    { title: "【鬼頭刀與慰勞】", desc: "● 祭儀：舉行小船招魚祭，開始晝間繩釣鬼頭刀。舉行慰勞節（螃蟹祭），婦女製作芋頭糕慰勞丈夫辛勞。<br><br>● 勞動：砍伐專門晾曬鬼頭刀的魚架（Papataw）。" },
-    { title: "【儲備與祈福】", desc: "● 祭儀：月初舉行祈福祭。<br><br>● 勞動：舉行蒸飛魚祭（mapasoad），將飛魚乾剪翅後蒸熟儲存。製作木臼與木杵。" },
-    { title: "【共享與終止】", desc: "● 祭儀：飛魚終了祭，此月結束後不再捕飛魚。舉行收獲節與小米祭。<br><br>● 文化：稱為「好月節」，親友間互相贈送剩餘的飛魚，分享勞動成果。" },
-    { title: "【耕作與落成】", desc: "● 祭儀：適合舉辦房屋（主屋、涼亭）或各種拼板舟的落成禮。<br><br>● 勞動：開始開墾新的水芋田與地瓜田。" },
-    { title: "【取土燒陶】", desc: "● 勞動：採集陶土並燒製陶器（陶甕）。因氣候乾燥有利於陶器成型。" },
-    { title: "【終食與去穢】", desc: "● 祭儀：月中（14或15日）舉行飛魚終食祭，此後嚴禁食用飛魚乾。<br><br>● 文化：剩餘魚乾需餵豬，不可再儲存。此月被視為驅除惡靈的月份。" },
-    { title: "【大凶與貝灰】", desc: "● 禁忌：全年最不吉利的月份，禁止建屋、造船落成或為嬰兒取名。<br><br>● 勞動：專門燒製貝灰（與檳榔共食或彩繪船身用）。" },
-    { title: "【祭祖與播種】", desc: "● 祭儀：舉行祖靈祭 (Pazos) 與亡魂節，感謝神靈保護與祖先養育。<br><br>● 勞動：播種小米；採伐蘆葦以備未來製作捕魚用的火把。" },
-    { title: "【工藝與冶金】", desc: "● 勞動：男人從事冶鐵（製作銀帽、盔甲、漿繩）；女人織布並編織藤籃。<br><br>● 文化：婦女舉行祝福芋頭田的儀式。" }
+    { 
+        title_zh: "【迎接魚季與社交】", 
+        title_en: "【Welcoming Season & Socializing】",
+        desc_zh: "● 祭儀：舉行「立春」儀式與「孝敬父母日」。進行殺豬祭儀，將豬肉分享給祖先以祈求出海平安。<br><br>● 勞動：準備捕魚工具、採集材料、修補大船、理髮。",
+        desc_en: "● Rituals: Spring welcoming & Parents honoring. Pig sacrifice for safety at sea.<br><br>● Labor: Prep fishing gear, gather bark, repair big ships, hair cutting."
+    },
+    { 
+        title_zh: "【禁忌與正式招魚】", 
+        title_en: "【Taboo & Formal Fish Summoning】",
+        desc_zh: "● 祭儀：舉行正式的招飛魚祭 (Manlag)。紅頭部落於初二開始。東清部落會焚燒蘆葦莖製作火把。<br><br>● 文化：進入禁慾期（Paneneb），男船員在共宿屋（Panragan）集體生活以防寒並防止私會婦女。<br><br>● 勞動：上山砍伐曬魚架材料；開始夜間火把捕魚。",
+        desc_en: "● Rituals: Formal Flying Fish Summon (Manlag). Burning reed stalks for torches.<br><br>● Culture: Taboo period (Paneneb); crew sleep in communal huts to stay warm & disciplined.<br><br>● Labor: Gather wood for fish racks; start night torch fishing."
+    },
+    { 
+        title_zh: "【全力捕撈與放寬】", 
+        title_en: "【Full-Scale Fishing & Relaxing】",
+        desc_zh: "● 祭儀：大船船組解散，男人可回原家屋睡覺。<br><br>● 文化：捕獲的飛魚可帶回家中煮熟處理，並塗抹鹽巴晾曬。<br><br>● 勞動：全力捕撈飛魚；婦女開始到山上採集陸蟹。",
+        desc_en: "● Rituals: Big boat groups disband. Men return home to sleep.<br><br>● Culture: Caught fish brought home, cooked, salted, and dried.<br><br>● Labor: Full-scale flying fish catch; women gather land crabs."
+    },
+    { 
+        title_zh: "【鬼頭刀與慰勞】", 
+        title_en: "【Mahi-Mahi & Appreciation】",
+        desc_zh: "● 祭儀：舉行小船招魚祭，開始晝間繩釣鬼頭刀。舉行慰勞節（螃蟹祭），婦女製作芋頭糕慰勞丈夫辛勞。<br><br>● 勞動：砍伐專門晾曬鬼頭刀的魚架（Papataw）。",
+        desc_en: "● Rituals: Small boat summon; daytime line fishing for Mahi-Mahi. Appreciation Festival (Crab Feast): women make taro cakes for husbands.<br><br>● Labor: Gather wood for Mahi-Mahi racks."
+    },
+    { 
+        title_zh: "【儲備與祈福】", 
+        title_en: "【Storage & Blessing】",
+        desc_zh: "● 祭儀：月初舉行祈福祭。<br><br>● 勞動：舉行蒸飛魚祭（mapasoad），將飛魚乾剪翅後蒸熟儲存。製作木臼與木杵。",
+        desc_en: "● Rituals: Blessing ceremony at the start of the month.<br><br>● Labor: Steaming ceremony (mapasoad): clip wings, steam, dry, store. Craft wooden mortar and pestles."
+    },
+    { 
+        title_zh: "【共享與終止】", 
+        title_en: "【Sharing & Termination】",
+        desc_zh: "● 祭儀：飛魚終了祭，此月結束後不再捕飛魚。舉行收獲節與小米祭。<br><br>● 文化：稱為「好月節」，親友間互相贈送剩餘的飛魚，分享勞動成果。",
+        desc_en: "● Rituals: End-of-Season ceremony. Harvest and millet festivals.<br><br>● Culture: Known as the 'Good Month'. Relatives share remaining fish to celebrate labor."
+    },
+    { 
+        title_zh: "【耕作與落成】", 
+        title_en: "【Farming & House Launching】",
+        desc_zh: "● 祭儀：適合舉辦房屋（主屋、涼亭）或各種拼板舟的落成禮。<br><br>● 勞動：開始開墾新的水芋田與地瓜田。",
+        desc_en: "● Rituals: Perfect month for house completion or plank boat launches.<br><br>● Labor: Start cultivating new water taro and sweet potato fields."
+    },
+    { 
+        title_zh: "【取土燒陶】", 
+        title_en: "【Clay Gathering & Pottery】",
+        desc_zh: "● 勞動：採集陶土並燒製陶器（陶甕）。因氣候乾燥有利於陶器成型。",
+        desc_en: "● Labor: Gather clay and fire traditional pottery vessels. Dry weather is perfect for shaping clay."
+    },
+    { 
+        title_zh: "【終食與去穢】", 
+        title_en: "【Final Fish Eating & Purification】",
+        desc_zh: "● 祭儀：月中（14或15日）舉行飛魚終食祭，此後嚴禁食用飛魚乾。<br><br>● 文化：剩餘魚乾需餵豬，不可再儲存。此月被視為驅除惡靈的月份。",
+        desc_en: "● Rituals: Mid-month (14th/15th) final fish feast. Eating dried fish is strictly banned afterwards.<br><br>● Culture: Remaining dried fish is fed to pigs, not stored. Purification rituals."
+    },
+    { 
+        title_zh: "【大凶與貝灰】", 
+        title_en: "【Taboo & Shell Lime】",
+        desc_zh: "● 禁忌：全年最不吉利的月份，禁止建屋、造船落成或為嬰兒取名。<br><br>● 勞動：專門燒製貝灰（與檳榔共食或彩繪船身用）。",
+        desc_en: "● Taboo: Most unlucky month. House building, boat launches, or naming babies is forbidden.<br><br>● Labor: Dedicated to burning shell lime (for betel nut or boat painting)."
+    },
+    { 
+        title_zh: "【祭祖與播種】", 
+        title_en: "【Ancestral worship & Planting】",
+        desc_zh: "● 祭儀：舉行祖靈祭 (Pazos) 與亡魂節，感謝神靈保護與祖先養育。<br><br>● 勞動：播種小米；採伐蘆葦以備未來製作捕魚用的火把。",
+        desc_en: "● Rituals: Ancestral ritual (Pazos) & All Souls Day. Thank the gods and ancestors.<br><br>● Labor: Plant millet; gather reeds to make fishing torches."
+    },
+    { 
+        title_zh: "【工藝與冶金】", 
+        title_en: "【Crafts & Metallurgy】",
+        desc_zh: "● 勞動：男人從事冶鐵（製作銀帽、盔甲、漿繩）；女人織布並編織藤籃。<br><br>● 文化：婦女舉行祝福芋頭田的儀式。",
+        desc_en: "● Labor: Men engage in metallurgy (silver helmets, armor, oars); women weave clothes and rattan baskets.<br><br>● Culture: Women perform taro field blessing rituals."
+    }
 ];
 
 document.addEventListener('click', (e) => {
@@ -514,9 +1626,10 @@ document.addEventListener('click', (e) => {
         const month = parseInt(monthEl.textContent);
         const lore = monthLoreData[month];
         if (lore) {
+            const isEn = currentLang === 'en';
             document.getElementById('lore-title').textContent = document.getElementById('month-name').textContent;
-            document.getElementById('lore-subtitle').textContent = lore.title;
-            document.getElementById('lore-content').innerHTML = lore.desc;
+            document.getElementById('lore-subtitle').textContent = isEn ? lore.title_en : lore.title_zh;
+            document.getElementById('lore-content').innerHTML = isEn ? lore.desc_en : lore.desc_zh;
             document.getElementById('lore-modal').style.display = 'flex';
         }
     } else if (e.target.id === 'close-lore-btn') {
@@ -757,17 +1870,14 @@ function updateBackgroundForMonth(month) {
 function renderGame(state) {
     document.querySelector('.bg-layer').classList.remove('lobby-anim'); // Stop lobby animation
     
-    if (state.month !== parseInt(monthEl.textContent)) {
-        document.getElementById('month-badge').classList.remove('animate-change');
-        void document.getElementById('month-badge').offsetWidth; // trigger reflow
-        document.getElementById('month-badge').classList.add('animate-change');
-    }
+    const isEn = currentLang === 'en';
+    const monthBadgeHtml = isEn ? `Month <span id="current-month">${state.month}</span>` : `第 <span id="current-month">${state.month}</span> 個月`;
+    document.getElementById('month-badge').innerHTML = monthBadgeHtml;
     
-    monthEl.textContent = state.month;
     updateBackgroundForMonth(state.month);
 
     monthNameEl.textContent = GAME_RULES[state.month - 1].name;
-    monthDescEl.textContent = GAME_RULES[state.month - 1].desc;
+    monthDescEl.textContent = isEn ? GAME_RULES[state.month - 1].desc_en : GAME_RULES[state.month - 1].desc_zh;
 
     // Players list & Map locations
     playersListEl.innerHTML = '';
@@ -775,7 +1885,7 @@ function renderGame(state) {
     
     let youthOptions = '';
     
-    const steps = ['尚未開始', '已剝麻', '已刮絲', '已捻線', '✅ 已完工'];
+    const steps = translations[currentLang].game.steps;
     
     for (const [id, p] of Object.entries(state.players)) {
         const isMe = id === myId;
@@ -783,7 +1893,7 @@ function renderGame(state) {
         
         let giveBtnHtml = '';
         if (!isMe && myP && myP.location === p.location && myP.materials > 0) {
-            giveBtnHtml = `<button class="give-btn" data-id="${id}" style="font-size:0.75rem; padding: 0.3rem 0.8rem; border-radius:6px; background:rgba(212,175,55,0.15); color:var(--secondary); border:1px solid rgba(212,175,55,0.4); cursor:pointer; font-weight:bold; transition:all 0.3s; box-shadow: 0 0 10px rgba(212,175,55,0.1);">🎁 贈材料 (-1 AP)</button>`;
+            giveBtnHtml = `<button class="give-btn" data-id="${id}" style="font-size:0.75rem; padding: 0.3rem 0.8rem; border-radius:6px; background:rgba(212,175,55,0.15); color:var(--secondary); border:1px solid rgba(212,175,55,0.4); cursor:pointer; font-weight:bold; transition:all 0.3s; box-shadow: 0 0 10px rgba(212,175,55,0.1);">${translations[currentLang].game.giveBtn}</button>`;
         }
         
         // Sidebar item
@@ -795,16 +1905,16 @@ function renderGame(state) {
                     <div class="player-name-wrapper">
                         ${isMe ? `
                         <span class="player-name player-avatar-trigger"
-                            title="點擊預覽你的角色"
+                            title="${isEn ? 'Click to preview your character' : '點擊預覽你的角色'}"
                             data-player-name="${p.name}"
                             data-player-role="${p.role}"
                             style="cursor:pointer; text-decoration:underline dotted rgba(255,255,255,0.3); text-underline-offset:3px;"
                         >${p.avatar ? p.avatar.icon : ''} ${p.name} <span style="font-size:0.65rem;opacity:0.55;">👁</span></span>
                         ` : `<span class="player-name">${p.avatar ? p.avatar.icon : ''} ${p.name}</span>`}
-                        ${isMe ? '<span class="tag is-me">你</span>' : ''}
+                        ${isMe ? `<span class="tag is-me">${translations[currentLang].game.meTag}</span>` : ''}
                     </div>
                     <div class="player-status-icon">
-                        ${p.ready ? '<span title="已準備" class="ready-icon">✅</span>' : '<span title="思考中" class="thinking-icon" style="opacity:0.6;">⏳</span>'}
+                        ${p.ready ? `<span title="${isEn ? 'Ready' : '已準備'}" class="ready-icon">✅</span>` : `<span title="${isEn ? 'Thinking' : '思考中'}" class="thinking-icon" style="opacity:0.6;">⏳</span>`}
                     </div>
                 </div>
                 <div class="player-role-row" style="margin-bottom:0.5rem;">
@@ -821,24 +1931,24 @@ function renderGame(state) {
             <div class="player-stats-grid">
                 <div class="stat-box ap-box">
                     <span class="stat-icon">⚡</span>
-                    <span class="stat-label">AP:</span>
+                    <span class="stat-label">${translations[currentLang].game.ap}</span>
                     <span class="stat-value">${p.ap}</span>
                 </div>
                 <div class="stat-box kp-box">
                     <span class="stat-icon">💡</span>
-                    <span class="stat-label">KP:</span>
+                    <span class="stat-label">${translations[currentLang].game.kp}</span>
                     <span class="stat-value">${p.kp}</span>
                 </div>
                 <div class="stat-box mat-box">
                     <span class="stat-icon">🌿</span>
-                    <span class="stat-label">材:</span>
+                    <span class="stat-label">${translations[currentLang].game.mat}</span>
                     <span class="stat-value">${p.materials}</span>
                 </div>
             </div>
             
             <div class="player-footer">
                 <div class="progress-pill">
-                    <span class="progress-label">進度</span>
+                    <span class="progress-label">${translations[currentLang].game.progressLabel}</span>
                     <span class="progress-value">${steps[p.progress]}</span>
                 </div>
                 <div class="score-pill">
@@ -861,11 +1971,11 @@ function renderGame(state) {
         // My status
         if (isMe) {
             myStatusEl.innerHTML = `
-                <div class="status-item"><span class="status-label">剩餘 AP</span><span class="status-val">${p.ap}</span></div>
-                <div class="status-item"><span class="status-label">KP 點數</span><span class="status-val">${p.kp}</span></div>
-                <div class="status-item"><span class="status-label">持有材料</span><span class="status-val">${p.materials}</span></div>
-                <div class="status-item"><span class="status-label">造船進度</span><span class="status-val">${steps[p.progress]}</span></div>
-                <div class="status-item"><span class="status-label">總得分</span><span class="status-val">${p.score}</span></div>
+                <div class="status-item"><span class="status-label">${translations[currentLang].game.statusLabels[0]}</span><span class="status-val">${p.ap}</span></div>
+                <div class="status-item"><span class="status-label">${translations[currentLang].game.statusLabels[1]}</span><span class="status-val">${p.kp}</span></div>
+                <div class="status-item"><span class="status-label">${translations[currentLang].game.statusLabels[2]}</span><span class="status-val">${p.materials}</span></div>
+                <div class="status-item"><span class="status-label">${translations[currentLang].game.statusLabels[3]}</span><span class="status-val">${steps[p.progress]}</span></div>
+                <div class="status-item"><span class="status-label">${translations[currentLang].game.statusLabels[4]}</span><span class="status-val">${p.score}</span></div>
             `;
             
             if (p.role === 'youth') {
@@ -883,10 +1993,10 @@ function renderGame(state) {
             
             // Ready Button UI
             if (p.ready) {
-                nextMonthBtn.textContent = '取消準備 (等候其他玩家...)';
+                nextMonthBtn.textContent = translations[currentLang].game.readyBtnReady;
                 nextMonthBtn.className = 'btn secondary outline';
             } else {
-                nextMonthBtn.textContent = '準備進入下個月';
+                nextMonthBtn.textContent = translations[currentLang].game.readyBtnNotReady;
                 nextMonthBtn.className = 'btn primary glow-btn';
             }
         }
@@ -894,20 +2004,15 @@ function renderGame(state) {
 
     // Update map location badges with premium icon cards
     const ROLE_META = {
-        elder:  { label: '耆老', color: '#d97706', icon: '🧓' },
-        middle: { label: '協商者', color: '#0ea5e9', icon: '👷' },
-        youth:  { label: '青年學徒', color: '#86efac', icon: '🧑' },
-    };
-    const LOCATION_ICONS = {
-        '山林': '🌲',
-        '灘頭工作室': '🛖',
-        '商店': '🏬'
+        elder:  { label: isEn ? 'Elder Artisan' : '耆老', color: '#d97706', icon: '🧓' },
+        middle: { label: isEn ? 'Negotiator' : '協商者', color: '#0ea5e9', icon: '👷' },
+        youth:  { label: isEn ? 'Young Apprentice' : '青年學徒', color: '#86efac', icon: '🧑' },
     };
     for (const [loc, players] of Object.entries(locMap)) {
         const container = document.querySelector(`.location-card[data-loc="${loc}"] .players-here`);
         if (!container) continue;
         if (players.length === 0) {
-            container.innerHTML = `<span class="loc-empty">無人在此</span>`;
+            container.innerHTML = `<span class="loc-empty">${translations[currentLang].game.emptyLoc}</span>`;
             continue;
         }
         container.innerHTML = players.map(({ name, role, avatar, isMe }) => {
@@ -921,7 +2026,7 @@ function renderGame(state) {
                     ${avatarHtml}
                 </div>
                 <div class="loc-info">
-                    <span class="loc-name">${name}${isMe ? ' <em style="font-size:0.6rem;color:'+meta.color+';font-style:normal;">(你)</em>' : ''}</span>
+                    <span class="loc-name">${name}${isMe ? ' <em style="font-size:0.6rem;color:'+meta.color+';font-style:normal;">' + (isEn ? '(You)' : '(你)') + '</em>' : ''}</span>
                     <span class="loc-role" style="color:${meta.color};">${meta.label}</span>
                 </div>
             </div>`;
@@ -929,7 +2034,7 @@ function renderGame(state) {
     }
 
     // Logs
-    logsEl.innerHTML = state.logs.map(l => `<div class="log-entry">${l}</div>`).reverse().join('');
+    logsEl.innerHTML = state.logs.map(l => `<div class="log-entry">${translateLog(l)}</div>`).reverse().join('');
 }
 
 function renderGameOver(state) {
@@ -946,11 +2051,16 @@ function renderGameOver(state) {
         prismaticBurstInstance = null;
     }
 
+    const isEn = currentLang === 'en';
+    const finalTitle = isEn ? 'Settlement: Cultural Resilience' : '結算：文化韌性';
+    const restartBtnText = isEn ? 'Return to Tribe' : '重新回到部落';
+    const scoreSrc = isEn ? 'Score Sources: ' : '得分來源: ';
+
     appEl.innerHTML = `
         <canvas id="prismatic-burst-canvas" class="prismatic-burst-container"></canvas>
         <div class="screen active" style="align-items:center; justify-content:center; overflow-y:auto; padding:2rem 0; min-height:100vh;">
             <div class="glass" style="padding: 2rem; text-align:center; max-width: 800px; width: 90%; position:relative; z-index:10; margin: auto;">
-                <h1 style="font-family: 'Noto Serif TC', serif; font-weight: 900; font-size: 2.5rem; color:var(--primary); margin-bottom: 2rem; letter-spacing:0.15em; text-shadow: 0 0 20px rgba(139, 195, 74, 0.4);">結算：文化韌性</h1>
+                <h1 style="font-family: 'Noto Serif TC', serif; font-weight: 900; font-size: 2.5rem; color:var(--primary); margin-bottom: 2rem; letter-spacing:0.15em; text-shadow: 0 0 20px rgba(139, 195, 74, 0.4);">${finalTitle}</h1>
                 <div style="text-align:left; margin-bottom: 2rem; display:flex; flex-direction:column; gap:1.5rem;">
                     ${Object.values(state.players).sort((a,b)=>b.score-a.score).map((p, i) => `
                         <div style="background:rgba(0,0,0,0.4); padding:1.5rem; border-radius:12px; border-left: 5px solid ${i===0?'var(--secondary)':'var(--text-muted)'};">
@@ -959,18 +2069,18 @@ function renderGameOver(state) {
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem;">
                                 <p style="color:var(--secondary); font-size:1.6rem; font-weight:800; font-family:'Outfit', sans-serif;">⭐ ${p.score}</p>
-                                <p style="font-size:1.1rem; font-weight:bold; color: ${p.finished ? 'var(--primary)' : 'var(--danger)'};">${p.ending ? p.ending.title : (p.finished ? '✅ 傳承成功' : '❌ 文化斷裂')}</p>
+                                <p style="font-size:1.1rem; font-weight:bold; color: ${p.finished ? 'var(--primary)' : 'var(--danger)'};">${p.ending ? (isEn && endingTranslations[p.ending.title] ? endingTranslations[p.ending.title].title : p.ending.title) : (p.finished ? (isEn ? '✅ Heritage Succeeded' : '✅ 傳承成功') : (isEn ? '❌ Cultural Disruption' : '❌ 文化斷裂'))}</p>
                             </div>
                             ${p.ending ? `
                             <div style="color:var(--text-main); font-size:0.95rem; line-height:1.7; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem; font-family: 'Noto Serif TC', serif;">
-                                ${p.ending.text}
+                                ${isEn && endingTranslations[p.ending.title] ? endingTranslations[p.ending.title].text : p.ending.text}
                             </div>
                             ` : ''}
-                            <p style="color:var(--text-muted); font-size:0.8rem;">得分來源: ${p.score_breakdown.join(', ')}</p>
+                            <p style="color:var(--text-muted); font-size:0.8rem;">${scoreSrc}${translateScoreBreakdown(p.score_breakdown).join(', ')}</p>
                         </div>
                     `).join('')}
                 </div>
-                <button class="btn primary" style="width:100%" onclick="location.reload()">重新回到部落</button>
+                <button class="btn primary" style="width:100%" onclick="location.reload()">${restartBtnText}</button>
             </div>
         </div>
     `;
@@ -992,9 +2102,10 @@ function renderGameOver(state) {
 }
 
 function getRoleName(role) {
-    if(role === 'elder') return '資深工匠';
-    if(role === 'youth') return '青年學徒(部落青年)';
-    return '協商者(中年工匠)';
+    const isEn = currentLang === 'en';
+    if(role === 'elder') return isEn ? 'Elder Artisan' : '資深工匠';
+    if(role === 'youth') return isEn ? 'Young Apprentice' : '青年學徒(部落青年)';
+    return isEn ? 'Negotiator' : '協商者(中年工匠)';
 }
 
 // ── Avatar Preview Modal ───────────────────────────────────────────────────

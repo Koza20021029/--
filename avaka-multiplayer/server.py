@@ -5,7 +5,7 @@ import random
 import string
 
 app = Flask(__name__, static_folder='static')
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Game State: Multiple Rooms
 rooms = {} # room_code -> game_state
