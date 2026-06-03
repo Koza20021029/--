@@ -284,6 +284,38 @@
 
         <!-- Lobby -->
         <div id="lobby" class="screen active">
+            <!-- Left Side Widget: Ocean & Weather Observation -->
+            <div id="lobby-left-widget" class="lobby-side-widget glass">
+                <div class="widget-header">
+                    <span class="widget-icon">🌊</span>
+                    <h4 id="left-widget-title">蘭嶼即時海象觀測</h4>
+                </div>
+                <div class="widget-content">
+                    <div class="stat-row">
+                        <span id="label-widget-tide" class="stat-name">目前潮汐</span>
+                        <span id="widget-tide" class="stat-val-glow">漲潮</span>
+                    </div>
+                    <div class="stat-row">
+                        <span id="label-widget-wave" class="stat-name">近海浪高</span>
+                        <span id="widget-wave" class="stat-val-glow">1.8 m</span>
+                    </div>
+                    <div class="stat-row">
+                        <span id="label-widget-wind" class="stat-name">平均風速</span>
+                        <span id="widget-wind" class="stat-val-glow">12 kt</span>
+                    </div>
+                    <div class="stat-row">
+                        <span id="label-widget-temp" class="stat-name">黑潮水溫</span>
+                        <span id="widget-temp" class="stat-val-glow">26.4 °C</span>
+                    </div>
+                    <div class="stat-row">
+                        <span id="label-widget-moon" class="stat-name">當前月相</span>
+                        <span id="widget-moon" class="stat-val-glow">🌑 載入中</span>
+                    </div>
+                </div>
+                <!-- Dynamic wave drawing -->
+                <canvas id="widget-wave-canvas" class="widget-mini-canvas"></canvas>
+            </div>
+
             <div class="lobby-card">
                 <div class="title-wrapper">
                     <div class="bg-subtitle"><span>A</span><span>V</span><span>A</span><span>K</span><span>A</span></div>
@@ -364,6 +396,34 @@
                     <div class="button-group-vertical mt-4">
                         <button id="start-game-btn" class="btn primary">開始遊戲</button>
                         <button id="leave-lobby-btn" class="btn danger">退出房間</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side Widget: Workshop Activity Feed -->
+            <div id="lobby-right-widget" class="lobby-side-widget glass">
+                <div class="widget-header">
+                    <span class="widget-icon">🔨</span>
+                    <h4 id="right-widget-title">工坊即時狀態</h4>
+                </div>
+                <div class="widget-content">
+                    <div class="stat-row">
+                        <span id="label-widget-active" class="stat-name">島民工匠在線</span>
+                        <span id="widget-active-craftsmen" class="stat-val-glow">7 人</span>
+                    </div>
+                    <div class="stat-row">
+                        <span id="label-widget-boats" class="stat-name">累計造船艘數</span>
+                        <span id="widget-total-boats" class="stat-val-glow">42 艘</span>
+                    </div>
+                    <div class="stat-row">
+                        <span id="label-widget-hemp" class="stat-name">Avaka 採集量</span>
+                        <span id="widget-hemp-qty" class="stat-val-glow">156 捆</span>
+                    </div>
+                </div>
+                <div class="widget-ticker-container">
+                    <div id="label-widget-ticker-title" class="ticker-title">📢 部落動態日誌</div>
+                    <div id="widget-ticker-scroll" class="ticker-scroll">
+                        <div class="ticker-item">加載日誌中...</div>
                     </div>
                 </div>
             </div>

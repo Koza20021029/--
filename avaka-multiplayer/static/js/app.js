@@ -439,7 +439,41 @@ const translations = {
                 <p>12 個月結束後，系統會結算所有人的「文化韌性總分」。成功走完「傳統路線」將獲得 15 分以上的評價；依賴「現代路線」得分較低（中生代除外）。此外，青年學徒向耆老請益，雙方都能額外獲得傳承的分數，團隊合作才是關鍵！</p>
             </div>
             <button id="close-rules-btn" class="btn primary mt-4">我已經完全了解了</button>
-        `
+        `,
+        widgets: {
+            leftTitle: '蘭嶼即時海象觀測',
+            tideLabel: '目前潮汐',
+            waveLabel: '近海浪高',
+            windLabel: '平均風速',
+            tempLabel: '黑潮水溫',
+            moonLabel: '當前月相',
+            moons: [
+                '新月/朔 🌑',
+                '眉月 🌒',
+                '上弦月 🌓',
+                '盈凸月 🌔',
+                '滿月/望 🌕',
+                '虧凸月 🌖',
+                '下弦月 🌗',
+                '殘月 🌘'
+            ],
+            rightTitle: '工坊即時狀態',
+            activeLabel: '島民工匠在線',
+            boatsLabel: '累計造船艘數',
+            hempLabel: 'Avaka 採集量',
+            tickerTitle: '📢 部落動態日誌',
+            tides: ['漲潮', '退潮', '乾潮', '滿潮'],
+            tickerMessages: [
+                '青年在灘頭工作室開始剝麻...',
+                '耆老在灘頭開始大船下水祈福...',
+                '中生代在現代商店購置了工業樹脂...',
+                '島民在山林採集蘭嶼花椒...',
+                '達悟族長輩正在向年輕人傳授造船歌謠...',
+                '潮汐變更，目前正值退潮時段...',
+                '飛魚群在開元港外海躍出水面！',
+                '海風徐徐吹拂，山林氣溫適宜原料生長...'
+            ]
+        }
     },
     en: {
         title: ['D','i','m','e','n','s','i','o','n',' ','o','f',' ','t','h','e',' ','I','s','l','a','n','d'],
@@ -651,7 +685,41 @@ const translations = {
                 <p>After 12 months, the system settles everyone's "Cultural Resilience Total Score". Successfully completing the traditional path yields 15+ points; relying on the modern path scores lower (except for the Negotiator). Moreover, learning from the Elder rewards both players with heritage scores—cooperation is key!</p>
             </div>
             <button id="close-rules-btn" class="btn primary mt-4">I understand completely</button>
-        `
+        `,
+        widgets: {
+            leftTitle: 'Lanyu Ocean Observation',
+            tideLabel: 'Current Tide',
+            waveLabel: 'Wave Height',
+            windLabel: 'Wind Speed',
+            tempLabel: 'Sea Temp',
+            moonLabel: 'Moon Phase',
+            moons: [
+                'New Moon 🌑',
+                'Waxing Crescent 🌒',
+                'First Quarter 🌓',
+                'Waxing Gibbous 🌔',
+                'Full Moon 🌕',
+                'Waning Gibbous 🌖',
+                'Last Quarter 🌗',
+                'Waning Crescent 🌘'
+            ],
+            rightTitle: 'Workshop Status',
+            activeLabel: 'Online Artisans',
+            boatsLabel: 'Boats Finished',
+            hempLabel: 'Hemp Harvest',
+            tickerTitle: '📢 Tribal Event Logs',
+            tides: ['Flood Tide', 'Ebb Tide', 'Low Tide', 'High Tide'],
+            tickerMessages: [
+                'A youth started peeling hemp at the workshop...',
+                'An elder initiated the boat launching ritual...',
+                'A negotiator bought resin at the store...',
+                'Islanders are gathering Lanyu prickly ash...',
+                'Tao elders are teaching canoe songs to youths...',
+                'Tide shifted: low tide cycle active...',
+                'School of flying fish spotted near harbor!',
+                'Sea breeze blowing; temperature is ideal for crops...'
+            ]
+        }
     }
 };
 
@@ -1001,6 +1069,44 @@ function applyLanguage() {
     if (rulesModalContent) {
         rulesModalContent.innerHTML = t.rulesHtml;
     }
+
+    // 8. Translate Lobby Side Widgets
+    const leftWidgetTitle = document.getElementById('left-widget-title');
+    if (leftWidgetTitle) leftWidgetTitle.textContent = t.widgets.leftTitle;
+
+    const lblTide = document.getElementById('label-widget-tide');
+    if (lblTide) lblTide.textContent = t.widgets.tideLabel;
+    
+    const lblWave = document.getElementById('label-widget-wave');
+    if (lblWave) lblWave.textContent = t.widgets.waveLabel;
+    
+    const lblWind = document.getElementById('label-widget-wind');
+    if (lblWind) lblWind.textContent = t.widgets.windLabel;
+    
+    const lblTemp = document.getElementById('label-widget-temp');
+    if (lblTemp) lblTemp.textContent = t.widgets.tempLabel;
+
+    const lblMoon = document.getElementById('label-widget-moon');
+    if (lblMoon) lblMoon.textContent = t.widgets.moonLabel;
+
+    const rightWidgetTitle = document.getElementById('right-widget-title');
+    if (rightWidgetTitle) rightWidgetTitle.textContent = t.widgets.rightTitle;
+
+    const lblActive = document.getElementById('label-widget-active');
+    if (lblActive) lblActive.textContent = t.widgets.activeLabel;
+    
+    const lblBoats = document.getElementById('label-widget-boats');
+    if (lblBoats) lblBoats.textContent = t.widgets.boatsLabel;
+    
+    const lblHemp = document.getElementById('label-widget-hemp');
+    if (lblHemp) lblHemp.textContent = t.widgets.hempLabel;
+
+    const lblTickerTitle = document.getElementById('label-widget-ticker-title');
+    if (lblTickerTitle) lblTickerTitle.textContent = t.widgets.tickerTitle;
+
+    if (window.updateWidgetLanguages) {
+        window.updateWidgetLanguages();
+    }
 }
 
 
@@ -1289,6 +1395,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply active language configuration on launch
     applyLanguage();
+    if (typeof initLobbyWidgets === 'function') {
+        initLobbyWidgets();
+    }
 
     // Background Effects Spawners
     function spawnLeaf() {
@@ -1381,6 +1490,9 @@ function openAvatarCreator(actionType, data) {
     
     lobbyScreen.classList.remove('active');
     avatarScreen.classList.add('active');
+    if (typeof clearLobbyWidgets === 'function') {
+        clearLobbyWidgets();
+    }
     
     // Give DOM time to render canvas, then init Three.js
     setTimeout(() => { initAvatar3D(); }, 80);
@@ -1410,6 +1522,9 @@ avatarBackBtn.addEventListener('click', () => {
     destroyAvatar3D();
     avatarScreen.classList.remove('active');
     lobbyScreen.classList.add('active');
+    if (typeof initLobbyWidgets === 'function') {
+        initLobbyWidgets();
+    }
     pendingRoomAction = null;
 });
 
@@ -1481,6 +1596,7 @@ socket.on('state_update', (state) => {
     if (!state.started && Object.keys(state.players).length > 0 && state.month > 12) {
         // Game Over
         renderGameOver(state);
+        if (typeof clearLobbyWidgets === 'function') clearLobbyWidgets();
         return;
     }
 
@@ -1490,15 +1606,23 @@ socket.on('state_update', (state) => {
             prismaticBurstInstance.destroy();
             prismaticBurstInstance = null;
         }
+        const wasLobbyActive = lobbyScreen.classList.contains('active');
         lobbyScreen.classList.add('active');
         gameScreen.classList.remove('active');
         avatarScreen.classList.remove('active');
         renderLobby(state);
+        if (!wasLobbyActive && typeof initLobbyWidgets === 'function') {
+            initLobbyWidgets();
+        }
     } else {
         // Game state
+        const wasLobbyActive = lobbyScreen.classList.contains('active');
         lobbyScreen.classList.remove('active');
         avatarScreen.classList.remove('active');
         gameScreen.classList.add('active');
+        if (wasLobbyActive && typeof clearLobbyWidgets === 'function') {
+            clearLobbyWidgets();
+        }
         
         if (state.month !== currentDisplayedMonth) {
             currentDisplayedMonth = state.month;
@@ -2397,4 +2521,303 @@ function initPlayerCardsTilt() {
             card.style.setProperty('--pointer-y', '50%');
         });
     });
+}
+
+// ─── Lobby Side Widgets (Ocean Observations & Ticker Events) ──────────────────
+let lobbyWidgetsAnimationId = null;
+let lobbyWidgetsIntervals = [];
+
+function getLanyuTidePhase() {
+    // 基準滿潮時間: 2026-06-01 04:00:00 UTC+8
+    const baseHighTide = new Date("2026-06-01T04:00:00+08:00").getTime();
+    const now = Date.now();
+    const diffHours = (now - baseHighTide) / (1000 * 60 * 60);
+    
+    // 半日潮週期為 12.42 小時
+    const tidePeriod = 12.42;
+    const phase = (diffHours % tidePeriod) / tidePeriod * 2 * Math.PI;
+    
+    const cosVal = Math.cos(phase);
+    const sinVal = Math.sin(phase);
+    
+    if (cosVal > 0.7) {
+        return 3; // 滿潮 (High Tide)
+    } else if (cosVal < -0.7) {
+        return 2; // 乾潮 (Low Tide)
+    } else if (sinVal > 0) {
+        return 1; // 退潮 (Ebb Tide)
+    } else {
+        return 0; // 漲潮 (Flood Tide)
+    }
+}
+
+function getLanyuMoonPhase() {
+    // 基準新月時間: 2026-05-17 19:13:00 UTC+8
+    const baseNewMoon = new Date("2026-05-17T19:13:00+08:00").getTime();
+    const now = Date.now();
+    const diffDays = (now - baseNewMoon) / (1000 * 60 * 60 * 24);
+    const moonAge = (diffDays % 29.53059) / 29.53059;
+    
+    // 均分 8 等分 (0:新月, 1:眉月, 2:上弦, 3:盈凸, 4:滿月, 5:虧凸, 6:下弦, 7:殘月)
+    return Math.round(moonAge * 8) % 8;
+}
+
+function initLobbyWidgets() {
+    console.log("[LobbyWidgets] initLobbyWidgets() called.");
+    clearLobbyWidgets();
+
+    // 1. Sine wave animation for left widget canvas
+    const canvas = document.getElementById('widget-wave-canvas');
+    if (canvas) {
+        console.log("[LobbyWidgets] Canvas wave element detected, starting drawWave loop.");
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+
+        function drawWave() {
+            if (!document.getElementById('lobby-left-widget') || 
+                window.getComputedStyle(document.getElementById('lobby-left-widget')).display === 'none') {
+                lobbyWidgetsAnimationId = requestAnimationFrame(drawWave);
+                return;
+            }
+
+            // Handle high-dpi display
+            const dpr = window.devicePixelRatio || 1;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.scale(dpr, dpr);
+
+            // Draw wave lines
+            ctx.lineWidth = 1.5;
+            
+            // Draw Wave 1 (Deep Blue/Cyan)
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+            ctx.beginPath();
+            for (let x = 0; x < width; x++) {
+                const y = height / 2 + Math.sin(x * 0.03 + angle) * 5 + Math.cos(x * 0.01 + angle * 0.5) * 2;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Draw Wave 2 (Bright Cyan/Green)
+            ctx.strokeStyle = 'rgba(74, 222, 128, 0.25)';
+            ctx.beginPath();
+            for (let x = 0; x < width; x++) {
+                const y = height / 2 + Math.sin(x * 0.02 - angle * 0.8) * 4 + Math.cos(x * 0.015 - angle * 0.3) * 2;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            ctx.restore();
+            angle += 0.04;
+            lobbyWidgetsAnimationId = requestAnimationFrame(drawWave);
+        }
+        drawWave();
+    } else {
+        console.warn("[LobbyWidgets] Canvas wave element (#widget-wave-canvas) NOT found.");
+    }
+
+    // 2. Weather Ocean parameters simulation & real fetch
+    const tideEl = document.getElementById('widget-tide');
+    const waveEl = document.getElementById('widget-wave');
+    const windEl = document.getElementById('widget-wind');
+    const tempEl = document.getElementById('widget-temp');
+    const moonEl = document.getElementById('widget-moon');
+
+    let currentTideIndex = getLanyuTidePhase();
+    let currentMoonIndex = getLanyuMoonPhase();
+    let baseWaveHt = 1.8;
+    let baseWindSpd = 12;
+    let baseTempC = 26.4;
+
+    let waveHt = baseWaveHt;
+    let windSpd = baseWindSpd;
+    let tempC = baseTempC;
+
+    function updateWidgetValues() {
+        const t = translations[currentLang];
+        if (!t || !t.widgets) return;
+        
+        if (tideEl && t.widgets.tides) {
+            tideEl.textContent = t.widgets.tides[currentTideIndex];
+        }
+        if (moonEl && t.widgets.moons) {
+            moonEl.textContent = t.widgets.moons[currentMoonIndex];
+        }
+        if (waveEl) waveEl.textContent = `${waveHt.toFixed(1)} m`;
+        if (windEl) windEl.textContent = `${windSpd} kt`;
+        if (tempEl) tempEl.textContent = `${tempC.toFixed(1)} °C`;
+    }
+
+    // Apply translations on initial load
+    updateWidgetValues();
+
+    // Fetch real-time sea data from Open-Meteo
+    async function fetchRealSeaData() {
+        try {
+            console.log("[LobbyWidgets] Fetching real Lanyu ocean data from Open-Meteo...");
+            // Lanyu Coordinates: Latitude 22.037, Longitude 121.562
+            const [marineRes, weatherRes] = await Promise.all([
+                fetch("https://marine-api.open-meteo.com/v1/marine?latitude=22.037&longitude=121.562&current=wave_height"),
+                fetch("https://api.open-meteo.com/v1/forecast?latitude=22.037&longitude=121.562&current=temperature_2m,wind_speed_10m")
+            ]);
+            
+            if (marineRes.ok && weatherRes.ok) {
+                const marineData = await marineRes.json();
+                const weatherData = await weatherRes.json();
+                
+                if (marineData && marineData.current && marineData.current.wave_height !== undefined) {
+                    baseWaveHt = marineData.current.wave_height;
+                }
+                if (weatherData && weatherData.current) {
+                    if (weatherData.current.wind_speed_10m !== undefined) {
+                        // km/h to knots
+                        baseWindSpd = Math.round(weatherData.current.wind_speed_10m * 0.54);
+                    }
+                    if (weatherData.current.temperature_2m !== undefined) {
+                        baseTempC = weatherData.current.temperature_2m;
+                    }
+                }
+                console.log(`[LobbyWidgets] Real-time Lanyu data loaded: Wave: ${baseWaveHt}m, Wind: ${baseWindSpd}kt, Temp: ${baseTempC}°C`);
+                
+                // Immediately apply
+                waveHt = baseWaveHt;
+                windSpd = baseWindSpd;
+                tempC = baseTempC;
+                updateWidgetValues();
+            } else {
+                console.warn("[LobbyWidgets] Real-time fetch failed, keeping fallback simulation values.");
+            }
+        } catch (err) {
+            console.error("[LobbyWidgets] Failed to fetch real Lanyu sea data:", err);
+        }
+    }
+    
+    fetchRealSeaData();
+
+    const weatherInterval = setInterval(() => {
+        const t = translations[currentLang];
+        if (!t || !t.widgets || !t.widgets.tides) return;
+        
+        currentTideIndex = getLanyuTidePhase();
+        currentMoonIndex = getLanyuMoonPhase();
+
+        // Subtly fluctuate values on top of real values
+        waveHt = Math.max(0.2, baseWaveHt + (Math.sin(Date.now() * 0.001) * 0.08) + (Math.random() - 0.5) * 0.03);
+        windSpd = Math.max(0, Math.round(baseWindSpd + (Math.cos(Date.now() * 0.001) * 1) + (Math.random() > 0.5 ? 0.5 : -0.5)));
+        tempC = baseTempC + (Math.sin(Date.now() * 0.0005) * 0.08);
+
+        updateWidgetValues();
+    }, 3000);
+    lobbyWidgetsIntervals.push(weatherInterval);
+
+    // 3. Online craft stats & ticker simulation
+    const activeEl = document.getElementById('widget-active-craftsmen');
+    const boatsEl = document.getElementById('widget-total-boats');
+    const hempEl = document.getElementById('widget-hemp-qty');
+    const tickerScroll = document.getElementById('widget-ticker-scroll');
+
+    let activeCount = 7;
+    let boatsCount = 42;
+    let hempCount = 156;
+    let tickerList = [];
+
+    // Initialize ticker logs safely
+    const t = translations[currentLang];
+    if (t && t.widgets && t.widgets.tickerMessages) {
+        tickerList.push(t.widgets.tickerMessages[0]);
+        tickerList.push(t.widgets.tickerMessages[1]);
+        tickerList.push(t.widgets.tickerMessages[2]);
+    }
+
+    function renderTicker() {
+        if (!tickerScroll) return;
+        tickerScroll.innerHTML = tickerList.map(msg => `<div class="ticker-item">${msg}</div>`).join('');
+    }
+    renderTicker();
+
+    const statsInterval = setInterval(() => {
+        // Fluctuate active players (5 to 11)
+        activeCount = Math.max(5, Math.min(11, activeCount + Math.floor((Math.random() - 0.5) * 3)));
+        if (activeEl) activeEl.textContent = `${activeCount} ${currentLang === 'zh' ? '人' : 'Active'}`;
+
+        // Occasionally increment completed boats
+        if (Math.random() > 0.9) {
+            boatsCount++;
+            if (boatsEl) boatsEl.textContent = `${boatsCount} ${currentLang === 'zh' ? '艘' : 'Boats'}`;
+        }
+
+        // Increment hemp harvest count
+        hempCount += Math.floor(Math.random() * 3);
+        if (hempEl) hempEl.textContent = `${hempCount} ${currentLang === 'zh' ? '捆' : 'Bales'}`;
+
+        // Push new ticker item safely
+        const tCur = translations[currentLang];
+        if (!tCur || !tCur.widgets || !tCur.widgets.tickerMessages) return;
+        const randomMsg = tCur.widgets.tickerMessages[Math.floor(Math.random() * tCur.widgets.tickerMessages.length)];
+        
+        // Push and shift ticker list
+        tickerList.push(randomMsg);
+        if (tickerList.length > 5) {
+            tickerList.shift();
+        }
+
+        // Animate scroll
+        if (tickerScroll) {
+            tickerScroll.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            tickerScroll.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                renderTicker();
+                tickerScroll.style.transition = 'none';
+                tickerScroll.style.transform = 'translateY(0)';
+            }, 450);
+        }
+    }, 4000);
+    lobbyWidgetsIntervals.push(statsInterval);
+
+    // Expose language updater safely
+    window.updateWidgetLanguages = () => {
+        console.log("[LobbyWidgets] updateWidgetLanguages() called.");
+        const tNew = translations[currentLang];
+        if (!tNew || !tNew.widgets) return;
+        if (tideEl && tNew.widgets.tides) tideEl.textContent = tNew.widgets.tides[currentTideIndex];
+        if (moonEl && tNew.widgets.moons) moonEl.textContent = tNew.widgets.moons[currentMoonIndex];
+        if (activeEl) activeEl.textContent = `${activeCount} ${currentLang === 'zh' ? '人' : 'Active'}`;
+        if (boatsEl) boatsEl.textContent = `${boatsCount} ${currentLang === 'zh' ? '艘' : 'Boats'}`;
+        if (hempEl) hempEl.textContent = `${hempCount} ${currentLang === 'zh' ? '捆' : 'Bales'}`;
+        
+        // Translate currently visible ticker list
+        const oldLang = currentLang === 'zh' ? 'en' : 'zh';
+        if (translations[oldLang] && translations[oldLang].widgets && translations[oldLang].widgets.tickerMessages &&
+            tNew.widgets.tickerMessages) {
+            tickerList = tickerList.map(msg => {
+                const index = translations[oldLang].widgets.tickerMessages.indexOf(msg);
+                if (index !== -1) {
+                    return tNew.widgets.tickerMessages[index];
+                }
+                return msg;
+            });
+        }
+        renderTicker();
+    };
+    console.log("[LobbyWidgets] initLobbyWidgets() finished executing.");
+}
+
+function clearLobbyWidgets() {
+    console.log("[LobbyWidgets] clearLobbyWidgets() called.");
+    if (lobbyWidgetsAnimationId) {
+        cancelAnimationFrame(lobbyWidgetsAnimationId);
+        lobbyWidgetsAnimationId = null;
+    }
+    lobbyWidgetsIntervals.forEach(clearInterval);
+    lobbyWidgetsIntervals = [];
+    window.updateWidgetLanguages = null;
 }
