@@ -1059,6 +1059,7 @@ let currentAvatarSelections = {};
 let lastGameState = null;
 let lightRaysInstance = null;
 let prismaticBurstInstance = null;
+let locPlayerCardInstances = [];
 
 
 
@@ -2050,11 +2051,17 @@ function renderGame(state) {
         }
     }
 
+    // Destroy previous location player card pixel instances
+    if (locPlayerCardInstances) {
+        locPlayerCardInstances.forEach(inst => inst.destroy());
+    }
+    locPlayerCardInstances = [];
+
     // Update map location badges with premium icon cards
     const ROLE_META = {
-        elder:  { label: isEn ? 'Elder Artisan' : '耆老', color: '#d97706', icon: '🧓' },
-        middle: { label: isEn ? 'Negotiator' : '協商者', color: '#0ea5e9', icon: '👷' },
-        youth:  { label: isEn ? 'Young Apprentice' : '青年學徒', color: '#86efac', icon: '🧑' },
+        elder:  { label: isEn ? 'Elder Artisan' : '耆老', color: '#d4af37', rgb: '212, 175, 55', icon: '🧓' },
+        middle: { label: isEn ? 'Negotiator' : '協商者', color: '#a78bfa', rgb: '167, 139, 250', icon: '👷' },
+        youth:  { label: isEn ? 'Young Apprentice' : '青年學徒', color: '#4ade80', rgb: '74, 222, 128', icon: '🧑' },
     };
     for (const [loc, players] of Object.entries(locMap)) {
         const container = document.querySelector(`.location-card[data-loc="${loc}"] .players-here`);
@@ -2064,22 +2071,45 @@ function renderGame(state) {
             continue;
         }
         container.innerHTML = players.map(({ name, role, avatar, isMe }) => {
-            const meta = ROLE_META[role] || { label: role, color: '#94a3b8', icon: '👤' };
+            const meta = ROLE_META[role] || { label: role, color: '#94a3b8', rgb: '148, 163, 184', icon: '👤' };
             const avatarHtml = avatar && avatar.image
                 ? `<img src="${avatar.image}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid ${meta.color};">`
                 : `<span style="font-size:1.4rem;line-height:1;">${avatar?.icon || meta.icon}</span>`;
             return `
-            <div class="loc-player-card ${isMe ? 'loc-card-me' : ''}" style="--role-color:${meta.color}">
-                <div class="loc-avatar-ring" style="border-color:${meta.color};box-shadow:0 0 8px ${meta.color}44;">
-                    ${avatarHtml}
+            <div class="loc-player-card ${isMe ? 'loc-card-me' : ''}" style="--role-color:${meta.color}; --role-color-rgb:${meta.rgb}" data-role="${role}">
+                <canvas class="pixel-canvas"></canvas>
+                <div class="loc-avatar-container">
+                    <div class="loc-avatar-ring" style="border-color:${meta.color};">
+                        ${avatarHtml}
+                    </div>
+                    <span class="loc-avatar-icon-badge" style="background:${meta.color};">${meta.icon}</span>
                 </div>
                 <div class="loc-info">
-                    <span class="loc-name">${name}${isMe ? ' <em style="font-size:0.6rem;color:'+meta.color+';font-style:normal;">' + (isEn ? '(You)' : '(你)') + '</em>' : ''}</span>
-                    <span class="loc-role" style="color:${meta.color};">${meta.label}</span>
+                    <div class="loc-name-row">
+                        <span class="loc-name">${name}</span>
+                        ${isMe ? `<span class="loc-me-badge" style="background:${meta.color}33; border: 1px solid ${meta.color}; color:${meta.color};">${isEn ? 'YOU' : '你'}</span>` : ''}
+                    </div>
+                    <span class="loc-role-badge" style="border-color:${meta.color}66; background:${meta.color}1a; color:${meta.color};">
+                        ${meta.label}
+                    </span>
                 </div>
             </div>`;
         }).join('');
     }
+
+    // Initialize Pixel Cards for each location player card
+    document.querySelectorAll('.loc-player-card').forEach(el => {
+        const role = el.getAttribute('data-role');
+        let variant = 'default';
+        if (role === 'elder') variant = 'yellow';
+        else if (role === 'middle') variant = 'blue';
+        else if (role === 'youth') variant = 'green';
+        
+        if (window.PixelCard) {
+            const inst = new window.PixelCard(el, { variant });
+            locPlayerCardInstances.push(inst);
+        }
+    });
 
     // Logs
     logsEl.innerHTML = state.logs.map(l => `<div class="log-entry">${translateLog(l)}</div>`).reverse().join('');
@@ -2100,6 +2130,11 @@ function renderGameOver(state) {
     if (prismaticBurstInstance) {
         prismaticBurstInstance.destroy();
         prismaticBurstInstance = null;
+    }
+
+    if (locPlayerCardInstances) {
+        locPlayerCardInstances.forEach(inst => inst.destroy());
+        locPlayerCardInstances = [];
     }
 
     const isEn = currentLang === 'en';
