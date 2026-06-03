@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, request
+from flask import Flask, send_from_directory, request, render_template
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 import random
@@ -80,7 +80,7 @@ def add_log(room_code, msg):
 
 @app.route('/')
 def index():
-    return send_from_directory('static', 'index.html')
+    return render_template('index.html')
 
 @app.route('/<path:path>')
 def serve_static(path):
