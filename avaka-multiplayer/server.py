@@ -5,6 +5,8 @@ import random
 import string
 
 app = Flask(__name__, static_folder='static')
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Game State: Multiple Rooms

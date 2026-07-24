@@ -1121,21 +1121,23 @@ header {
 }
 .avatar-btn-row {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.35rem;
     flex-wrap: wrap;
 }
 .avatar-opt {
-    flex: 1;
-    min-width: 60px;
+    flex: 1 1 calc(20% - 0.35rem);
+    min-width: 52px;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
-    padding: 0.45rem 0.5rem;
+    padding: 0.4rem 0.35rem;
     color: var(--text-muted);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     cursor: pointer;
     transition: all 0.2s;
     font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
 }
 .avatar-opt:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .avatar-opt.selected {

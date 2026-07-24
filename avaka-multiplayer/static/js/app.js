@@ -316,11 +316,13 @@ const translations = {
             accessoryOptions: {
                 none: '無',
                 silver_helmet: '銀盔',
+                rattan_helmet: '藤盔',
                 rattan_armor: '藤甲',
                 chest_ornament: '胸飾'
             },
             accessoryTitles: {
                 silver_helmet: '銀盔：達悟族最神聖禮器，銀片打造成圓錐狀',
+                rattan_helmet: '藤盔：傳統編織藤帽，由省藤條緊密圈編而成',
                 rattan_armor: '藤甲：由省藤編織，祭典時穿戴防身',
                 chest_ornament: '半月形胸飾：象徵社會地位與成就'
             },
@@ -562,11 +564,13 @@ const translations = {
             accessoryOptions: {
                 none: 'None',
                 silver_helmet: 'Silver Helmet',
+                rattan_helmet: 'Rattan Helmet',
                 rattan_armor: 'Rattan Armor',
                 chest_ornament: 'Chest Ornament'
             },
             accessoryTitles: {
                 silver_helmet: 'Silver Helmet: Sacred ceremonial object, conical silver plates',
+                rattan_helmet: 'Rattan Helmet: Traditional woven rattan helmet',
                 rattan_armor: 'Rattan Armor: Woven from rattan, worn for ritual defense',
                 chest_ornament: 'Half-moon Chest Ornament: Symbol of status and achievement'
             },
@@ -959,7 +963,8 @@ function applyLanguage() {
                 const val = opt.dataset.val;
                 if (t.avatar.faceOptions[val]) opt.textContent = t.avatar.faceOptions[val];
             });
-        } else if (txt.includes('禮儀') || txt.includes('Ceremonial')) {
+        } else if (txt.includes('配件') || txt.includes('防護') || txt.includes('禮儀') || txt.includes('Ceremonial') || txt.includes('Accessories')) {
+            ensureRattanHelmetButton();
             label.textContent = t.avatar.labels.accessory;
             const sub = group.querySelector('div');
             if (sub) sub.textContent = t.avatar.labels.accessorySub;
@@ -1495,8 +1500,32 @@ function openAvatarCreator(actionType, data) {
         clearLobbyWidgets();
     }
     
+    ensureRattanHelmetButton();
+    
     // Give DOM time to render canvas, then init Three.js
     setTimeout(() => { initAvatar3D(); }, 80);
+}
+
+function ensureRattanHelmetButton() {
+    const accessoryRow = document.querySelector('[data-ctrl="accessory"]');
+    if (accessoryRow && !accessoryRow.querySelector('[data-val="rattan_helmet"]')) {
+        const btn = document.createElement('button');
+        btn.className = 'avatar-opt';
+        btn.dataset.val = 'rattan_helmet';
+        btn.title = '藤盔：傳統編織藤帽，由8根粗省藤直脊與省藤圈圈編而成';
+        btn.textContent = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'Rattan Helmet' : '藤盔';
+        btn.style.cssText = 'flex:1; min-width:55px;';
+        
+        const silverBtn = accessoryRow.querySelector('[data-val="silver_helmet"]');
+        const rattanArmorBtn = accessoryRow.querySelector('[data-val="rattan_armor"]');
+        if (silverBtn && silverBtn.nextSibling) {
+            accessoryRow.insertBefore(btn, silverBtn.nextSibling);
+        } else if (rattanArmorBtn) {
+            accessoryRow.insertBefore(btn, rattanArmorBtn);
+        } else {
+            accessoryRow.appendChild(btn);
+        }
+    }
 }
 
 // Avatar control buttons — swatch & option buttons
@@ -1535,7 +1564,7 @@ avatarConfirmBtn.addEventListener('click', () => {
     const snapshot = captureAvatarSnapshot();
     const faceLabels  = currentLang === 'en' ? {round:'Round', square:'Square', slim:'Slim'} : {round:'圓潤臉', square:'寬顎臉', slim:'清秀臉'};
     const hairLabels  = currentLang === 'en' ? {short:'Short', long:'Long', bun:'Bun', bald:'Bald'} : {short:'短直髮', long:'長直髮', bun:'束髻', bald:'光頭'};
-    const accLabels   = currentLang === 'en' ? {none:'', silver_helmet:'Silver Helmet', rattan_armor:'Rattan Armor', chest_ornament:'Chest Ornament'} : {none:'', silver_helmet:'銀盔', rattan_armor:'藤甲', chest_ornament:'胸飾'};
+    const accLabels   = currentLang === 'en' ? {none:'', silver_helmet:'Silver Helmet', rattan_helmet:'Rattan Helmet', rattan_armor:'Rattan Armor', chest_ornament:'Chest Ornament'} : {none:'', silver_helmet:'銀盔', rattan_helmet:'藤盔', rattan_armor:'藤甲', chest_ornament:'胸飾'};
     const clothLabels = currentLang === 'en' ? {loincloth:'Loincloth', vest_dark:'B&W Vest', ceremony:'Ceremonial'} : {loincloth:'丁字褲', vest_dark:'黑白背心', ceremony:'祭典全裝'};
     
     const avatarData = {

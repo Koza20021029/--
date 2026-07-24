@@ -249,7 +249,7 @@ function buildCharacter() {
     lipBot.scale.set(1.2, 0.45, 0.1);
 
     // ── Hair ──
-    if (avatarState.accessory !== 'silver_helmet') {
+    if (avatarState.accessory !== 'silver_helmet' && avatarState.accessory !== 'rattan_helmet') {
         buildHair(hc, fw, fh, fd);
     }
 
@@ -454,35 +454,66 @@ function buildBody(sk) {
         elbowGroup.add(hand);
     });
 
-    // Waist
-    const waist = add(new THREE.CylinderGeometry(0.38, 0.38, 0.16, 32), mat('#c8b870', 0.88));
-    waist.position.set(0, 0.70, 0);
-    waist.scale.set(1.0, 1.0, 0.55);
-
-    // Hips
+    // ── Hips (Natural skin tone pelvic base for high-cut athletic legs) ──
     const hips = add(new THREE.CylinderGeometry(0.38, 0.36, 0.26, 32), skinMat);
     hips.position.set(0, 0.60, 0);
     hips.scale.set(1.0, 1.0, 0.55);
 
-    // Loincloth (Blue and white horizontal stripes)
-    const loincMat = mat('#ffffff', 0.85); // Pure white
-    const loinStripe = mat('#1a2b4c', 0.88); // Dark navy stripes
-    
-    // Front flap with 8 alternating white/blue horizontal segments
-    for (let i = 0; i < 8; i++) {
-        const isBlue = (i % 2 !== 0); // Alternate colors
-        const bandMat = isBlue ? loinStripe : loincMat;
-        const radiusTop = 0.12 - i * 0.002;
-        const radiusBot = 0.12 - (i + 1) * 0.002;
-        const band = add(new THREE.CylinderGeometry(radiusTop, radiusBot, 0.065, 16, 1, false, 0, Math.PI), bandMat);
-        band.position.set(0, 0.6675 - i * 0.065, 0.20);
-        band.scale.set(1, 1, 0.2);
-    }
+    // ── Authentic Tao Loincloth System (達悟族傳統丁字褲 Bah) ──
+    const loincMat   = mat('#fcfcf8', 0.82); // Pure white woven cotton fabric
+    const loinStripe = mat('#1e3050', 0.88); // Traditional dark indigo/navy woven stripe
 
-    // Back flap
-    const bflap = add(new THREE.CylinderGeometry(0.11, 0.09, 0.40, 16, 1, false, Math.PI, Math.PI));
-    bflap.position.set(0, 0.46, -0.20);
-    bflap.scale.set(1, 1, 0.2);
+    // 1. Snug-fitting Wrapped Cloth Waistband (貼合腰部的環狀布條)
+    // Sits flush against waist surface (r=0.38) without sticking out or floating
+    const waistBandBase = add(new THREE.CylinderGeometry(0.384, 0.376, 0.11, 32), loincMat);
+    waistBandBase.position.set(0, 0.675, 0);
+    waistBandBase.scale.set(1.0, 1.0, 0.55);
+
+    // Central navy woven stripe integrated flatly on the waistband
+    const waistBandStripe = add(new THREE.CylinderGeometry(0.386, 0.378, 0.045, 32), loinStripe);
+    waistBandStripe.position.set(0, 0.675, 0);
+    waistBandStripe.scale.set(1.0, 1.0, 0.55);
+
+    // Waistband side ties/knots (腰帶側邊結繩帶)
+    [-0.37, 0.37].forEach(x => {
+        const knot = add(new THREE.SphereGeometry(0.024, 12, 12), loincMat);
+        knot.position.set(x, 0.675, 0);
+        const knotTail = add(new THREE.CylinderGeometry(0.010, 0.007, 0.11, 8), loincMat);
+        knotTail.position.set(x * 1.01, 0.62, 0.02);
+        knotTail.rotation.z = x > 0 ? -0.2 : 0.2;
+    });
+
+    // 2. Flush V-Shaped Front Pouch & Crotch Coverage (平貼前襠 V 形護包與跨下包覆)
+    // Extends seamlessly from waistband (y=0.68) down over crotch
+    const pouchGeo = new THREE.CylinderGeometry(0.386, 0.14, 0.32, 24, 1, false, -Math.PI * 0.35, Math.PI * 0.70);
+    const pouch = add(pouchGeo, loincMat);
+    pouch.position.set(0, 0.53, 0);
+    pouch.scale.set(1.0, 1.0, 0.55);
+
+    // Crotch Underneath Bridge (跨下下方極密包覆帶)
+    const crotchBridge = add(new THREE.CylinderGeometry(0.125, 0.125, 0.38, 16), loincMat);
+    crotchBridge.position.set(0, 0.45, 0);
+    crotchBridge.rotation.x = Math.PI / 2;
+    crotchBridge.scale.set(0.92, 1.0, 0.65);
+
+    // 3. Front Apron Flap (前檔布/前垂布 - 直接緊貼並相連於腰帶布條，無縫懸垂)
+    const frontApronWidths = [0.24, 0.22, 0.20, 0.18, 0.16, 0.14, 0.12, 0.10];
+    frontApronWidths.forEach((w, i) => {
+        const isStripe = (i === 1 || i === 3);
+        const m = isStripe ? loinStripe : loincMat;
+        // Starts at yPos = 0.635 to touch waistband ring (y=0.675) with zero gap
+        const yPos = 0.635 - i * 0.050;
+        const apronSeg = add(new THREE.BoxGeometry(w, 0.051, 0.022), m);
+        apronSeg.position.set(0, yPos, 0.208 - i * 0.002);
+    });
+
+    // 4. Back Strap & Flap (後包覆帶與後垂布)
+    const backStrap = add(new THREE.CylinderGeometry(0.10, 0.09, 0.30, 16, 1, false, Math.PI * 0.6, Math.PI * 0.8), loincMat);
+    backStrap.position.set(0, 0.52, -0.05);
+    backStrap.scale.set(1.0, 1.0, 0.80);
+
+    const backTail = add(new THREE.BoxGeometry(0.12, 0.28, 0.020), loincMat);
+    backTail.position.set(0, 0.48, -0.20);
 
     // Legs
     [-1,1].forEach(s => {
@@ -511,51 +542,174 @@ function buildAccessory(fw, fh, fd) {
     const acc = avatarState.accessory;
     if (acc==='none') return;
 
-    if (acc==='rattan_armor') {
-        // 藤甲 (Rattan Armor) - open front vest
-        const rattanMat = mat('#8B6530', 0.90);
-        const bindMat = mat('#5a3a0a', 0.95);
+    if (acc === 'rattan_helmet') {
+        currentGroup = headGroup; // Attach helmet to scaled head group so it sways naturally with head rotation
         
-        // Back and sides wrap (open front)
-        const wrapGeo = new THREE.CylinderGeometry(0.44, 0.42, 0.85, 32, 1, false, Math.PI * 0.2, Math.PI * 1.6);
-        const wrap = add(wrapGeo, rattanMat);
-        wrap.position.set(0, 1.175, 0);
-        wrap.scale.set(1.0, 1.0, 0.6); // elliptical
+        const rattanDark    = mat('#2B231D', 0.88, 0.02); // Charcoal dark brown woven rattan
+        const rattanSpar    = mat('#382D25', 0.82, 0.04); // Thick main vertical rattan spar
+        const bindCordMat   = mat('#181310', 0.95, 0.00); // Blackish brown binding cord
+        const innerMat      = mat('#120E0C', 0.98, 0.00); // Dark interior lining cap
 
-        // Horizontal thick bands
-        for (let i=0; i<8; i++) {
-            const band = add(new THREE.TorusGeometry(0.435, 0.018, 8, 32, Math.PI * 1.6), mat('#6B4A1A', 0.95));
-            band.position.set(0, 0.78 + i*0.11, 0);
-            band.rotation.x = Math.PI/2;
-            band.rotation.z = Math.PI * 0.7; // Align gap with front
-            band.scale.set(1.0, 1.0, 0.6);
+        // 1. Dark interior lining cap (完美包覆頭頂)
+        const innerCap = add(new THREE.ConeGeometry(0.52, 0.75, 32, 1, true), innerMat);
+        innerCap.position.set(0, 2.62, 0);
+
+        // 2. Pointed Apex Peak Cap & Top Knob (博物館參考圖：尖頂編織頂紐)
+        const apexPeak = add(new THREE.ConeGeometry(0.07, 0.14, 16), bindCordMat);
+        apexPeak.position.set(0, 3.05, 0);
+
+        // 3. Inner Horizontal Woven Rattan Coils (8層內部橫向省藤條圈，佩戴於頭頂，完整露出五官)
+        const layers = [
+            { y: 2.98, r: 0.10, t: 0.026 },
+            { y: 2.90, r: 0.16, t: 0.028 },
+            { y: 2.82, r: 0.22, t: 0.030 },
+            { y: 2.73, r: 0.28, t: 0.032 },
+            { y: 2.64, r: 0.34, t: 0.034 },
+            { y: 2.54, r: 0.40, t: 0.036 },
+            { y: 2.44, r: 0.45, t: 0.038 },
+            { y: 2.34, r: 0.49, t: 0.040 },
+            { y: 2.26, r: 0.52, t: 0.042 }  // Base rim sitting at upper forehead (above eyebrows)
+        ];
+
+        layers.forEach((l) => {
+            const ring = add(new THREE.TorusGeometry(l.r, l.t, 12, 36), rattanDark);
+            ring.position.set(0, l.y, 0);
+            ring.rotation.x = Math.PI / 2;
+            ring.scale.set(1.0, 1.0, 1.06); // Oval contour for realistic head shape
+        });
+
+        // 4. 8 Heavy Outer Vertical Rattan Spars (8 根外層粗省藤直脊骨條由頂峰向四周放射)
+        const SPAR_COUNT = 8;
+        for (let i = 0; i < SPAR_COUNT; i++) {
+            const angle = (i / SPAR_COUNT) * Math.PI * 2;
+            for (let j = 0; j < layers.length - 1; j++) {
+                const l1 = layers[j], l2 = layers[j+1];
+                const r1 = l1.r * 1.08;
+                const r2 = l2.r * 1.08;
+                const x1 = Math.cos(angle) * r1, z1 = Math.sin(angle) * r1 * 1.06, y1 = l1.y;
+                const x2 = Math.cos(angle) * r2, z2 = Math.sin(angle) * r2 * 1.06, y2 = l2.y;
+
+                const dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
+                const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                
+                const sparSeg = add(new THREE.CylinderGeometry(0.018, 0.022, dist, 8), rattanSpar);
+                sparSeg.position.set((x1+x2)/2, (y1+y2)/2, (z1+z2)/2);
+                
+                const dir = new THREE.Vector3(dx, dy, dz).normalize();
+                sparSeg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+
+                const tieKnot = add(new THREE.SphereGeometry(0.014, 8, 8), bindCordMat);
+                tieKnot.position.set(x1, y1, z1);
+            }
         }
 
-        // Vertical edges at the opening
-        [-0.22, 0.22].forEach(x => {
-            const edge = add(new THREE.CylinderGeometry(0.02, 0.02, 0.85, 8), bindMat);
-            edge.position.set(x, 1.175, 0.25);
-            edge.rotation.z = x > 0 ? -0.05 : 0.05; // slight angle
-        });
+        // 5. Heavy Bottom Border Rim Band (底緣粗包邊編圈，剛好停在額頭上方)
+        const bottomBorder = add(new THREE.TorusGeometry(0.535, 0.034, 12, 36), bindCordMat);
+        bottomBorder.position.set(0, 2.24, 0);
+        bottomBorder.rotation.x = Math.PI / 2;
+        bottomBorder.scale.set(1.0, 1.0, 1.06);
+    }
 
-        // Vertical support bindings (back)
-        [-0.2, 0, 0.2].forEach(x => {
-            const backBind = add(new THREE.CylinderGeometry(0.015, 0.015, 0.85, 8), bindMat);
-            backBind.position.set(x, 1.175, -0.25);
-        });
+    if (acc === 'rattan_armor') {
+        // 博物館展示級達悟族傳統籐甲 (Museum-Grade Tao Authentic Rattan Armor)
+        const leatherBacking = mat('#1C1714', 0.92, 0.00); // Authentic Buffalo Leather Backing (水牛皮底襯)
+        const rattanRod      = mat('#44372D', 0.80, 0.02); // Aged Vertical Rattan Spar Rods (直向省藤棒條)
+        const rattanBundle   = mat('#382D24', 0.85, 0.02); // Lower & Upper Horizontal Rattan Bundles (橫向省藤束圈)
+        const borderTrim     = mat('#221B17', 0.95, 0.00); // Dark Leather/Rattan Border Trim (厚皮包邊)
+        const tieCordMat     = mat('#261F1A', 0.90, 0.00); // Chest Braided Tie Rope (胸前開襟繩結)
 
-        // Shoulder guards (angled outward)
-        [-1,1].forEach(s => {
-            const sg = add(new THREE.CylinderGeometry(0.14, 0.16, 0.22, 16), rattanMat);
-            sg.position.set(s*0.46, 1.58, 0);
-            sg.rotation.z = s * 0.3; // Angle outward
-            // Bands
-            for (let i=0; i<3; i++) {
-                const rl = add(new THREE.TorusGeometry(0.15, 0.014, 8, 16), mat('#6B4A1A',0.95));
-                rl.position.set(s*0.46, 1.49 + i*0.09, 0);
-                rl.rotation.x = Math.PI/2;
-                rl.rotation.y = s * -0.3;
+        // 1. Solid Dark Buffalo Leather Backing Vest Shell (水牛皮防護底襯背心)
+        const innerShell = add(new THREE.CylinderGeometry(0.44, 0.42, 0.86, 32, 1, false, Math.PI * 0.22, Math.PI * 1.56), leatherBacking);
+        innerShell.position.set(0, 1.18, 0);
+        innerShell.scale.set(1.0, 1.0, 0.58);
+
+        // High stiff back collar (脖子後方高立領水牛皮防護)
+        const backCollar = add(new THREE.CylinderGeometry(0.36, 0.42, 0.20, 24, 1, false, Math.PI * 0.7, Math.PI * 0.6), leatherBacking);
+        backCollar.position.set(0, 1.62, -0.05);
+        backCollar.scale.set(1.0, 1.0, 0.65);
+
+        // 2. UPPER SECTION: Vertical Rattan Rod Bundles (博物館參考圖上半部：避震直向省藤棒背心/胸肩甲區)
+        // Left & Right Front Chest Panels (左右正面: 7 根立體粗省藤棒向上排開)
+        [-1, 1].forEach(side => {
+            for (let i = 0; i < 7; i++) {
+                const x = side * (0.05 + i * 0.052);
+                const yStart = 1.15;
+                const yEnd = 1.54 - Math.abs(i - 3) * 0.02; // Curved shoulder contour
+                const height = yEnd - yStart;
+                
+                const rod = add(new THREE.CylinderGeometry(0.018, 0.018, height, 10), rattanRod);
+                rod.position.set(x, (yStart + yEnd) / 2, 0.248 + (0.03 - Math.abs(x)*0.05));
+                rod.rotation.z = side * (0.04 + i * 0.015); // Fan slightly outward
             }
+        });
+
+        // Upper Back Panel: 10 Vertical Rattan Rods across upper back (背部上半部 10 根垂直省藤棒)
+        for (let i = 0; i < 10; i++) {
+            const x = -0.28 + i * 0.062;
+            const rod = add(new THREE.CylinderGeometry(0.018, 0.018, 0.40, 10), rattanRod);
+            rod.position.set(x, 1.35, -0.255);
+        }
+
+        // 3. UPPER HORIZONTAL CROSS-BINDING BANDS (博物館照片：上半部直向省藤棒中間與上緣橫向固定籐條束)
+        [1.28, 1.45].forEach(y => {
+            const crossBundle = add(new THREE.TorusGeometry(0.440, 0.022, 10, 32, Math.PI * 1.52), rattanBundle);
+            crossBundle.position.set(0, y, 0);
+            crossBundle.rotation.x = Math.PI / 2;
+            crossBundle.rotation.z = Math.PI * 0.74;
+            crossBundle.scale.set(1.0, 1.0, 0.59);
+        });
+
+        // 4. LOWER SECTION: Dense Horizontal Rattan Bundle Rings (博物館參考圖下半部：5層粗厚橫向捆紮省藤束圈)
+        const LOWER_ROW_COUNT = 5;
+        for (let i = 0; i < LOWER_ROW_COUNT; i++) {
+            const y = 0.75 + i * 0.082;
+            const bundle = add(new THREE.TorusGeometry(0.438, 0.026, 12, 32, Math.PI * 1.52), rattanBundle);
+            bundle.position.set(0, y, 0);
+            bundle.rotation.x = Math.PI / 2;
+            bundle.rotation.z = Math.PI * 0.74; // Front opening slit
+            bundle.scale.set(1.0, 1.0, 0.59);
+        }
+
+        // 5. Heavy Rolled Border Trims (領口、袖口、開襟與下擺厚滾邊包邊條)
+        // Front Left & Right Opening Edges
+        [-0.22, 0.22].forEach(x => {
+            const edgeTrim = add(new THREE.CylinderGeometry(0.024, 0.024, 0.86, 10), borderTrim);
+            edgeTrim.position.set(x, 1.18, 0.258);
+            edgeTrim.rotation.z = x > 0 ? -0.05 : 0.05;
+        });
+
+        // Shoulder Line Border Trims (雙肩上方挺立厚包邊條)
+        [-1, 1].forEach(side => {
+            const shldrTrim = add(new THREE.CylinderGeometry(0.025, 0.025, 0.36, 10), borderTrim);
+            shldrTrim.position.set(side * 0.32, 1.56, 0.02);
+            shldrTrim.rotation.z = side * (Math.PI / 2 - 0.2);
+            shldrTrim.rotation.y = side * 0.2;
+        });
+
+        // Bottom Hem Heavy Rim
+        const bottomRim = add(new THREE.TorusGeometry(0.442, 0.028, 10, 32, Math.PI * 1.52), borderTrim);
+        bottomRim.position.set(0, 0.73, 0);
+        bottomRim.rotation.x = Math.PI / 2;
+        bottomRim.rotation.z = Math.PI * 0.74;
+        bottomRim.scale.set(1.0, 1.0, 0.59);
+
+        // 6. Front Chest Split Braided Tie Rope & Knot (胸前開襟對綁大繩結與雙垂繩頭)
+        const tieY = 1.15;
+        // Horizontal cord across chest slit
+        const tieCord = add(new THREE.CylinderGeometry(0.012, 0.012, 0.38, 8), tieCordMat);
+        tieCord.position.set(0, tieY, 0.265);
+        tieCord.rotation.z = Math.PI / 2;
+
+        // Big tied rope knot in center
+        const mainKnot = add(new THREE.SphereGeometry(0.034, 12, 12), tieCordMat);
+        mainKnot.position.set(0, tieY, 0.275);
+
+        // Long dangling braided rope ends (下垂雙繩頭)
+        [-0.04, 0.04].forEach((dx, idx) => {
+            const tail = add(new THREE.CylinderGeometry(0.009, 0.006, 0.18, 8), tieCordMat);
+            tail.position.set(dx, tieY - 0.08, 0.28);
+            tail.rotation.z = idx === 0 ? 0.22 : -0.22;
+            tail.rotation.x = -0.15;
         });
     }
 
