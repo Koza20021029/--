@@ -561,30 +561,77 @@ function buildAccessory(fw, fh, fd) {
 
     if (acc==='silver_helmet') {
         currentGroup = headGroup; // Attach helmet to the scaled head group
-        // 博物館級精緻達悟族銀盔 (Premium museum-grade Tao Silver Helmet)
-        // Consists of consecutive solid, thick overlapping rings forged together to completely cover the head
-        const silverMat = mat('#888890', 0.50, 0.40); // Bright traditional polished silver
-        
-        // Custom curved radius profile corresponding exactly to the bulge of the human head
-        // Guarantees the helmet shell is strictly wider than the head/ears at every single vertical coordinate
-        const radii = [
-            0.04, 0.12, 0.24, 0.38, 0.50, 0.59, 
-            0.64, 0.66, 0.67, 0.68, 0.69, 0.71, 0.73
+        // 博物館級達悟族圓錐銀盔 (Authentic Tao Conical Silver Helmet)
+        const silverMatPrimary   = mat('#e2e8f0', 0.22, 0.90); // Main bright polished silver
+        const silverMatSecondary = mat('#cbd5e1', 0.30, 0.85); // Contrast silver ring for plate layers
+        const eyeMat             = mat('#020617', 1.00, 0.00); // Dark interior & slit
+
+        // Cone profile radii from apex (y=3.10) down to flared base rim (y=1.70)
+        // Perfectly matches the conical ratio and silhouette of authentic historical Tao silver helmet
+        const ringConfigs = [
+            { y: 3.08, rTop: 0.04, rBot: 0.09, h: 0.10 }, // Apex top
+            { y: 2.98, rTop: 0.09, rBot: 0.14, h: 0.10 },
+            { y: 2.88, rTop: 0.14, rBot: 0.20, h: 0.10 },
+            { y: 2.78, rTop: 0.20, rBot: 0.26, h: 0.10 },
+            { y: 2.68, rTop: 0.26, rBot: 0.32, h: 0.10 },
+            { y: 2.58, rTop: 0.32, rBot: 0.38, h: 0.10 },
+            { y: 2.48, rTop: 0.38, rBot: 0.44, h: 0.10 },
+            { y: 2.38, rTop: 0.44, rBot: 0.50, h: 0.10 },
+            { y: 2.28, rTop: 0.50, rBot: 0.56, h: 0.10 }, // Above eye level
+            { y: 2.18, rTop: 0.56, rBot: 0.61, h: 0.10 }, // Eye level
+            { y: 2.08, rTop: 0.61, rBot: 0.66, h: 0.10 },
+            { y: 1.98, rTop: 0.66, rBot: 0.70, h: 0.10 },
+            { y: 1.88, rTop: 0.70, rBot: 0.74, h: 0.10 },
+            { y: 1.78, rTop: 0.74, rBot: 0.78, h: 0.10 }, // Base flared rim near shoulders
         ];
 
-        // Continuously stack 12 overlapping conical plate bands from crown down to collarbones
-        for (let i = 0; i < 12; i++) {
-            const rTop = radii[i];
-            const rBot = radii[i+1] + 0.015; // Beautiful traditional lower rim flare overlap
-            const yCenter = 2.9 - i * 0.12 - 0.06;
-            const ring = add(new THREE.CylinderGeometry(rTop, rBot, 0.13, 40), silverMat);
-            ring.position.set(0, yCenter, 0);
-        }
+        // 1. Apex top knob
+        const topKnob = add(new THREE.ConeGeometry(0.05, 0.10, 16), silverMatPrimary);
+        topKnob.position.set(0, 3.15, 0);
 
-        // Traditional horizontal viewing eye-slit embedded cleanly into the front plate at eye level (y=2.06)
-        const eyeSlit = add(new THREE.BoxGeometry(0.32, 0.055, 0.08), mat('#050508', 1.0));
-        eyeSlit.position.set(0, 2.06, 0.64);
-        
+        // 2. Stacked conical silver rings with plate seam rims
+        ringConfigs.forEach((cfg, idx) => {
+            const m = (idx % 2 === 0) ? silverMatPrimary : silverMatSecondary;
+            const ringGeo = new THREE.CylinderGeometry(cfg.rTop, cfg.rBot + 0.010, cfg.h, 36);
+            const ring = add(ringGeo, m);
+            ring.position.set(0, cfg.y, 0);
+
+            // Ring seam lip
+            const lipGeo = new THREE.TorusGeometry(cfg.rBot + 0.006, 0.007, 8, 36);
+            const lip = add(lipGeo, silverMatPrimary);
+            lip.position.set(0, cfg.y - cfg.h/2, 0);
+            lip.rotation.x = Math.PI / 2;
+        });
+
+        // 3. Dark interior lining cap (密封底緣內襯)
+        const innerCapGeo = new THREE.RingGeometry(0.48, 0.78, 36);
+        const innerCap = add(innerCapGeo, eyeMat);
+        innerCap.position.set(0, 1.73, 0);
+        innerCap.rotation.x = Math.PI / 2;
+
+        // 4. Horizontal eye viewing slit (觀測視線長方形眼孔)
+        const slitWidth = 0.28;
+        const slitHeight = 0.055;
+        const slitDepth = 0.10;
+        const eyeY = 2.12;
+        const eyeZ = 0.60;
+
+        // Recessed dark interior box for slit
+        const eyeSlitBox = add(new THREE.BoxGeometry(slitWidth, slitHeight, slitDepth), eyeMat);
+        eyeSlitBox.position.set(0, eyeY, eyeZ - 0.02);
+
+        // Silver frame around eye slit
+        const frameMat = silverMatPrimary;
+        const frameT = 0.010;
+        const fTop = add(new THREE.BoxGeometry(slitWidth + 0.02, frameT, 0.02), frameMat);
+        fTop.position.set(0, eyeY + slitHeight/2 + frameT/2, eyeZ);
+        const fBot = add(new THREE.BoxGeometry(slitWidth + 0.02, frameT, 0.02), frameMat);
+        fBot.position.set(0, eyeY - slitHeight/2 - frameT/2, eyeZ);
+        const fLeft = add(new THREE.BoxGeometry(frameT, slitHeight + 0.015, 0.02), frameMat);
+        fLeft.position.set(-slitWidth/2 - frameT/2, eyeY, eyeZ);
+        const fRight = add(new THREE.BoxGeometry(frameT, slitHeight + 0.015, 0.02), frameMat);
+        fRight.position.set(slitWidth/2 + frameT/2, eyeY, eyeZ);
+
         currentGroup = null; // Switch back to body
     }
 

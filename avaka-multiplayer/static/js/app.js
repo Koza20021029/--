@@ -806,6 +806,7 @@ function applyLanguage() {
             const words = ['Dimension', 'of', 'the', 'Island'];
             words.forEach(w => {
                 const s = document.createElement('span');
+                s.className = 'glow-word';
                 s.style.display = 'inline-block';
                 s.style.whiteSpace = 'nowrap';
                 

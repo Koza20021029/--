@@ -249,7 +249,17 @@ body {
     letter-spacing: 0.08em !important;
 }
 
-.glow-text span {
+.glow-text .glow-word {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    color: inherit !important;
+    -webkit-text-fill-color: initial !important;
+    animation: none !important;
+    filter: none !important;
+}
+
+.glow-text span:not(.glow-word) {
     font-weight: 900;
     background: linear-gradient(to right, #0284c7, #0ea5e9, #06b6d4, #10b981, #34d399, #0284c7);
     background-size: 300% 100%;
