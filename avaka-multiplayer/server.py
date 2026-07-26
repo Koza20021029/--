@@ -52,9 +52,9 @@ ENDINGS = {
 }
 
 ROLES = {
-    'elder': {'name': '資深工匠 (耆老)', 'ap': 6, 'kp': 10, 'score': 0},
-    'youth': {'name': '文化青年', 'ap': 12, 'kp': 0, 'score': 0},
-    'middle': {'name': '中生代', 'ap': 8, 'kp': 5, 'score': 0}
+    'elder':  {'name': '資深工匠 (耆老)', 'max_ap': 4, 'ap_recovery': 3, 'kp': 10, 'score': 0},
+    'youth':  {'name': '文化青年',      'max_ap': 6, 'ap_recovery': 4, 'kp': 0,  'score': 0},
+    'middle': {'name': '中生代',        'max_ap': 5, 'ap_recovery': 3, 'kp': 5,  'score': 0}
 }
 
 LOCATIONS = ['山林', '灘頭工作室', '商店']
@@ -79,6 +79,16 @@ def add_log(room_code, msg):
         rooms[room_code]['logs'].append(msg)
         if len(rooms[room_code]['logs']) > 50:
             rooms[room_code]['logs'].pop(0)
+
+def record_player_kp(player, month):
+    if 'kp_history' not in player or not isinstance(player['kp_history'], list):
+        player['kp_history'] = []
+    if len(player['kp_history']) == 0:
+        player['kp_history'].append({'month': month, 'kp': player['kp']})
+    elif player['kp_history'][-1]['month'] == month:
+        player['kp_history'][-1]['kp'] = player['kp']
+    else:
+        player['kp_history'].append({'month': month, 'kp': player['kp']})
 
 @app.route('/')
 def index():
@@ -150,14 +160,19 @@ def _join_player_to_room(sid, name, role, room_code, avatar=None):
     player_rooms[sid] = room_code
     state = rooms[room_code]
     
+    role_info = ROLES[role]
     state['players'][sid] = {
         'id': sid,
         'name': name,
         'role': role,
         'avatar': avatar,
-        'ap': ROLES[role]['ap'],
-        'max_ap': ROLES[role]['ap'],
-        'kp': ROLES[role]['kp'],
+        'ap': role_info['max_ap'],
+        'max_ap': role_info['max_ap'],
+        'ap_recovery': role_info['ap_recovery'],
+        'kp': role_info['kp'],
+        'kp_history': [{'month': 1, 'kp': role_info['kp']}],
+        'path_choice': 'none',
+        'last_step_month': 0,
         'location': '灘頭工作室',
         'materials': 0,
         'progress': 0,
@@ -199,6 +214,14 @@ def handle_start():
     
     state['started'] = True
     state['month'] = 1
+    for p in state['players'].values():
+        role_info = ROLES[p['role']]
+        p['ap'] = role_info['max_ap']
+        p['max_ap'] = role_info['max_ap']
+        p['ap_recovery'] = role_info['ap_recovery']
+        p['kp_history'] = [{'month': 1, 'kp': p['kp']}]
+        p['path_choice'] = 'none'
+        p['last_step_month'] = 0
     add_log(room_code, "遊戲開始！第 1 個月：Kashyman")
     socketio.emit('state_update', state, to=room_code)
 
@@ -241,7 +264,7 @@ def handle_action(data):
             emit('error', {'msg': '必須在山林才能採集'})
             return
             
-        cost = 2
+        cost = 3
         if consume_ap(cost):
             amount = 2 if month == 7 else 1
             player['materials'] += amount
@@ -252,42 +275,57 @@ def handle_action(data):
             emit('error', {'msg': '必須在灘頭工作室'})
             return
             
+        if player.get('last_step_month', 0) >= month:
+            emit('error', {'msg': '傳統纖維與木材需在灘頭晾曬乾燥至少 1 個月！請等待下個月節氣成熟後再執行下一工序。'})
+            return
+
         step = data.get('step')
-        cost = 2
+        cost = 3
         if month == 3: cost -= 1
             
         if step == 'peel' and player['progress'] == 0:
             if player['materials'] < 1:
-                emit('error', {'msg': '需要素材'})
+                emit('error', {'msg': '剝麻需要 1 份材料'})
                 return
             if consume_ap(cost):
                 player['materials'] -= 1
                 player['progress'] = 1
-                add_log(room_code, f"{player['name']} 完成了 剝麻")
+                player['last_step_month'] = month
+                add_log(room_code, f"{player['name']} 完成了 剝麻 (消耗 1 份材料)")
                 
         elif step == 'scrape' and player['progress'] == 1:
+            if player['materials'] < 1:
+                emit('error', {'msg': '刮絲需要 1 份材料'})
+                return
             if consume_ap(cost):
+                player['materials'] -= 1
                 player['progress'] = 2
-                add_log(room_code, f"{player['name']} 完成了 刮絲")
+                player['last_step_month'] = month
+                add_log(room_code, f"{player['name']} 完成了 刮絲 (消耗 1 份材料)")
                 
         elif step == 'twine' and player['progress'] == 2:
+            if player['materials'] < 1:
+                emit('error', {'msg': '捻線需要 1 份材料'})
+                return
             if player['kp'] < 3:
-                emit('error', {'msg': '需要 3 KP'})
+                emit('error', {'msg': '捻線需要 3 KP'})
                 return
             if month == 12: cost = 0
             if consume_ap(cost):
+                player['materials'] -= 1
                 player['progress'] = 3
-                add_log(room_code, f"{player['name']} 完成了 捻線")
+                player['last_step_month'] = month
+                add_log(room_code, f"{player['name']} 完成了 捻線 (消耗 1 份材料)")
                 
         elif step == 'caulk' and player['progress'] == 3:
             if month == 10:
                 emit('error', {'msg': '禁忌之月：這是專門製作貝灰的月份，不允許造屋或落成禮。即便材料已齊備，現在也絕不能動工填縫！'})
                 return
             if player['kp'] < 8:
-                emit('error', {'msg': '需要 8 KP'})
+                emit('error', {'msg': '填縫完工需要 8 KP'})
                 return
             if player['materials'] < 1:
-                emit('error', {'msg': '需要素材'})
+                emit('error', {'msg': '填縫完工需要 1 份材料'})
                 return
                 
             if player['role'] == 'elder': cost = 0
@@ -296,6 +334,8 @@ def handle_action(data):
                 player['materials'] -= 1
                 player['progress'] = 4
                 player['finished'] = True
+                player['path_choice'] = 'traditional'
+                player['last_step_month'] = month
                 
                 score = 15 + 5 # Base + guarantee
                 if month == 6: score += 2
@@ -307,12 +347,24 @@ def handle_action(data):
         if player['location'] != '商店':
             emit('error', {'msg': '必須在商店'})
             return
+        if player['progress'] < 1:
+            emit('error', {'msg': '必須至少完成基礎剝麻（進度 1）才能使用工業樹脂加工填縫！'})
+            return
+        if player['materials'] < 2:
+            emit('error', {'msg': '購買工業樹脂完工需要至少 2 份材料！'})
+            return
+        if player.get('last_step_month', 0) >= month:
+            emit('error', {'msg': '傳統纖維需在灘頭晾曬乾燥至少 1 個月才能進行樹脂加工！'})
+            return
             
-        cost = 4 if month == 9 else 2
+        cost = 4 if month == 9 else 3
         if consume_ap(cost):
+            player['materials'] -= 2
             player['industrial'] = True
+            player['path_choice'] = 'industrial'
             player['progress'] = 4
             player['finished'] = True
+            player['last_step_month'] = month
             
             score = 5
             if player['role'] == 'middle':
@@ -326,24 +378,28 @@ def handle_action(data):
 
     elif action == 'ask':
         if player['role'] != 'youth': return
-        cost = 4 if month == 4 else 2
+        cost = 4 if month == 4 else 3
         if consume_ap(cost):
             player['kp'] += 3
-            add_log(room_code, f"{player['name']} 向部落長輩請益，獲得 3 KP")
+            player['score'] += 1
+            player['score_breakdown'].append("虛心請益 (+1)")
+            add_log(room_code, f"{player['name']} 向部落長輩請益，獲得 3 KP 與 1 分傳承分數")
             # give elder score
             for p in state['players'].values():
-                if p['role'] == 'elder':
+                if p['role'] == 'elder' and p['id'] != player['id']:
                     p['score'] += 1
+                    p['score_breakdown'].append("傳承指導 (+1)")
                     add_log(room_code, f"{p['name']} 因傳承指導獲得 1 分")
 
     elif action == 'teach':
         if player['role'] != 'elder': return
         target_id = data.get('target_id')
         target_p = state['players'].get(target_id)
-        if target_p and consume_ap(1):
+        if target_p and consume_ap(2):
             target_p['kp'] += 1
             player['score'] += 1
-            add_log(room_code, f"{player['name']} 遠程指導了 {target_p['name']}")
+            player['score_breakdown'].append("遠程指導 (+1)")
+            add_log(room_code, f"{player['name']} 遠程指導了 {target_p['name']}，獲得 1 分傳承分數")
             
     elif action == 'give':
         target_id = data.get('target_id')
@@ -360,6 +416,32 @@ def handle_action(data):
             target_p['materials'] += 1
             add_log(room_code, f"🤝 {player['name']} 消耗了 1 AP，將 1 份材料送給了 {target_p['name']}！")
 
+    elif action == 'translate':
+        if player['kp'] < 2:
+            emit('error', {'msg': '科學轉譯需要至少 2 KP 傳統知識基礎！'})
+            return
+        if consume_ap(2):
+            player['kp'] -= 2
+            # Success probability calculation
+            if month == 8:
+                success = True # Month 8: Pitanatana (土器月): 科學轉譯必成功！
+            else:
+                base_prob = 0.5 + (player['kp'] * 0.05)
+                if player['role'] == 'middle':
+                    base_prob += 0.20 # Middle role bonus
+                base_prob = min(1.0, max(0.2, base_prob))
+                success = (random.random() <= base_prob)
+
+            if success:
+                score = 4
+                player['score'] += score
+                player['materials'] += 2
+                player['score_breakdown'].append(f"科學轉譯 (+{score})")
+                add_log(room_code, f"🔬 {player['name']} 成功對傳統工藝進行「科學轉譯」！解鎖工藝數據，獲得 +4 分與 2 份材料！")
+            else:
+                add_log(room_code, f"🔬 {player['name']} 嘗試對工藝進行「科學轉譯」，但實驗數據不足未果...")
+
+    record_player_kp(player, month)
     socketio.emit('state_update', state, to=room_code)
 
 @socketio.on('toggle_ready')
@@ -395,9 +477,11 @@ def handle_toggle_ready():
             month_info = MONTH_RULES[state['month']-1]
             add_log(room_code, f"進入第 {state['month']} 個月：{month_info['name']}。")
             
-            # restore AP
+            # Partial AP recovery per month (e.g. +4 AP for youth, +3 AP for elder/middle)
             for p in state['players'].values():
-                p['ap'] = p['max_ap']
+                rec = p.get('ap_recovery', 3)
+                p['ap'] = min(p['max_ap'], p['ap'] + rec)
+                add_log(room_code, f"⚡ {p['name']} 體力恢復，增加 {rec} AP (現有: {p['ap']}/{p['max_ap']} AP)")
                 
             if state['month'] == 5:
                 for p in state['players'].values():
@@ -421,6 +505,10 @@ def handle_toggle_ready():
                             if p['role'] == 'youth':
                                 p['kp'] += 2
                                 add_log(room_code, f"祭神月傳承：{p['name']} 獲得 2 KP")
+            
+            # Record KP for new month
+            for p in state['players'].values():
+                record_player_kp(p, state['month'])
                                 
     socketio.emit('state_update', state, to=room_code)
 

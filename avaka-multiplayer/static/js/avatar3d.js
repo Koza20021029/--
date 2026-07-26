@@ -350,7 +350,7 @@ function buildBody(sk) {
     idleRig = { torso: null, shoulders: [], armGroups: [], pecs: [], abs: [] };
     currentBodySwing = 0;
 
-    const torsoSkinMat = cloth==='loincloth' ? skinMat : mat(stripeW, 0.82);
+    const torsoSkinMat = (cloth === 'loincloth' || cloth === 'rattan_armor') ? skinMat : mat(stripeW, 0.82);
 
     // Torso (Elliptical Cylinder for organic shape)
     const torso = add(new THREE.CylinderGeometry(0.40, 0.38, 0.90, 32), torsoSkinMat);
@@ -385,7 +385,7 @@ function buildBody(sk) {
     }
 
     // Striped vest
-    if (cloth !== 'loincloth') {
+    if (cloth === 'vest_dark' || cloth === 'ceremony') {
         const stripes = [1.50, 1.38, 1.26, 1.14, 1.02, 0.90, 0.78];
         stripes.forEach((y, i) => {
             const col = i % 2 === 0 ? stripeD : stripeW;
@@ -608,9 +608,12 @@ function buildAccessory(fw, fh, fd) {
         bottomBorder.position.set(0, 2.24, 0);
         bottomBorder.rotation.x = Math.PI / 2;
         bottomBorder.scale.set(1.0, 1.0, 1.06);
+
+        currentGroup = null; // Switch back to body
     }
 
-    if (acc === 'rattan_armor') {
+    if (acc === 'rattan_armor' || avatarState.cloth === 'rattan_armor') {
+        currentGroup = null; // Ensure attached to body/avatarGroup
         // 博物館展示級達悟族傳統籐甲 (Museum-Grade Tao Authentic Rattan Armor)
         const leatherBacking = mat('#1C1714', 0.92, 0.00); // Authentic Buffalo Leather Backing (水牛皮底襯)
         const rattanRod      = mat('#44372D', 0.80, 0.02); // Aged Vertical Rattan Spar Rods (直向省藤棒條)
