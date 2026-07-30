@@ -1597,11 +1597,41 @@ leaveLobbyBtn.addEventListener('click', () => {
 
 leaveGameBtn.addEventListener('click', () => {
     const isEn = currentLang === 'en';
-    if(confirm(isEn ? 'Are you sure you want to leave the game?' : '確定要退出遊戲嗎？')) {
+    
+    // Use custom confirm modal instead of browser confirm() which can be blocked
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9900;background:rgba(2,6,23,0.80);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;animation:modal-fade-in 0.25s ease;cursor:none;';
+    
+    overlay.innerHTML = `
+        <div style="background:rgba(10,20,40,0.95);border:1px solid rgba(239,68,68,0.4);border-radius:16px;padding:2rem;max-width:320px;width:90%;text-align:center;box-shadow:0 0 40px rgba(239,68,68,0.2);">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">🚪</div>
+            <h3 style="color:#f87171;margin-bottom:0.8rem;font-size:1.1rem;">${isEn ? 'Leave the Game?' : '確定要退出遊戲嗎？'}</h3>
+            <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:1.5rem;">${isEn ? 'Your progress in this session will be lost.' : '退出後，你在本局的行動記錄將無法恢復。'}</p>
+            <div style="display:flex;gap:0.8rem;justify-content:center;">
+                <button id="leave-cancel-btn" style="padding:0.6rem 1.4rem;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#94a3b8;cursor:pointer;font-size:0.9rem;transition:all 0.2s;">${isEn ? 'Cancel' : '取消'}</button>
+                <button id="leave-confirm-btn" style="padding:0.6rem 1.4rem;border-radius:8px;border:1px solid rgba(239,68,68,0.5);background:rgba(239,68,68,0.2);color:#f87171;cursor:pointer;font-size:0.9rem;font-weight:600;transition:all 0.2s;">${isEn ? 'Leave Game' : '退出遊戲'}</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    document.getElementById('leave-cancel-btn').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    document.getElementById('leave-confirm-btn').addEventListener('click', () => {
+        overlay.remove();
+        // Send leave event and delay reload to ensure socket event is sent
         socket.emit('leave_game');
-        location.reload();
-    }
+        setTimeout(() => { location.reload(); }, 300);
+    });
+    
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+    });
 });
+
 
 startGameBtn.addEventListener('click', () => {
     socket.emit('start_game');
