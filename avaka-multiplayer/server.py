@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 from flask import Flask, send_from_directory, request, render_template
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
@@ -8,7 +11,14 @@ import threading
 app = Flask(__name__, static_folder='static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', ping_timeout=30, ping_interval=15)
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    async_mode='eventlet',
+    ping_timeout=60,
+    ping_interval=25,
+    max_http_buffer_size=2 * 1024 * 1024
+)
 
 # Thread lock to protect shared state from race conditions
 state_lock = threading.Lock()
@@ -61,7 +71,6 @@ ROLES = {
     'middle': {'name': '中生代',        'max_ap': 5, 'ap_recovery': 3, 'kp': 5,  'score': 0}
 }
 
-LOCATIONS = ['山林', '灘頭工作室', '商店']
 
 MONTH_RULES = [
     {"month": 1, "name": "Kashyman", "desc": "準備月: 移動不消耗 AP。"},
@@ -85,14 +94,11 @@ def add_log(room_code, msg):
             rooms[room_code]['logs'].pop(0)
 
 def record_player_kp(player, month):
-    if 'kp_history' not in player or not isinstance(player['kp_history'], list):
-        player['kp_history'] = []
-    if len(player['kp_history']) == 0:
-        player['kp_history'].append({'month': month, 'kp': player['kp']})
-    elif player['kp_history'][-1]['month'] == month:
-        player['kp_history'][-1]['kp'] = player['kp']
+    history = player.setdefault('kp_history', [])
+    if history and history[-1]['month'] == month:
+        history[-1]['kp'] = player['kp']
     else:
-        player['kp_history'].append({'month': month, 'kp': player['kp']})
+        history.append({'month': month, 'kp': player['kp']})
 
 @app.route('/')
 def index():
@@ -105,7 +111,15 @@ def serve_static(path):
 @socketio.on('connect')
 def handle_connect():
     print(f"Client connected: {request.sid}")
-    pass
+
+@socketio.on('get_state')
+def handle_get_state():
+    """Called by client after reconnect to get the latest room state."""
+    sid = request.sid
+    with state_lock:
+        room_code = player_rooms.get(sid)
+        if room_code and room_code in rooms:
+            emit('state_update', rooms[room_code])
 
 @socketio.on('chat_message')
 def handle_chat(data):
@@ -147,6 +161,25 @@ def handle_create_room(data):
         room_code = generate_room_code()
         rooms[room_code] = create_initial_state(room_code)
         _join_player_to_room(request.sid, name.strip(), role, room_code, data.get('avatar'))
+
+@socketio.on('rejoin_game')
+def handle_rejoin(data):
+    old_id = data.get('old_id')
+    room_code = data.get('room_code')
+    new_id = request.sid
+    with state_lock:
+        if room_code in rooms:
+            state = rooms[room_code]
+            if old_id in state['players']:
+                # Migrate player data to new socket ID
+                player_data = state['players'].pop(old_id)
+                player_data['id'] = new_id
+                state['players'][new_id] = player_data
+                player_rooms[new_id] = room_code
+                
+                # Rejoin socket room
+                join_room(room_code)
+                emit('state_update', state, to=room_code)
 
 @socketio.on('join_game')
 def handle_join(data):
@@ -273,6 +306,10 @@ def handle_action(data):
             return False
 
         if action == 'move':
+            if month == 2 and target == '山林':
+                emit('error', {'msg': '飛魚禁令：部落灘頭已舉行招魚祭，為了尊重魚靈，整個月份禁止進入山林！'})
+                return
+                
             cost = 1
             if player['role'] == 'youth' or month == 1:
                 cost = 0
@@ -401,13 +438,18 @@ def handle_action(data):
                 add_log(room_code, f"{player['name']} 使用現代材料完工，文化流失了...")
 
         elif action == 'ask':
-            if player['role'] != 'youth': return
-            cost = 4 if month == 4 else 3
+            if player['role'] not in ['youth', 'middle']: return
+            
+            is_youth = player['role'] == 'youth'
+            base_cost = 3 if is_youth else 1
+            cost = (base_cost + 1) if month == 4 else base_cost
+            
             if consume_ap(cost):
-                player['kp'] += 3
+                kp_gain = 3 if is_youth else 1
+                player['kp'] += kp_gain
                 player['score'] += 1
-                player['score_breakdown'].append("虛心請益 (+1)")
-                add_log(room_code, f"{player['name']} 向部落長輩請益，獲得 3 KP 與 1 分傳承分數")
+                player['score_breakdown'].append("請益長老 (+1)")
+                add_log(room_code, f"{player['name']} 向長老請益，獲得 {kp_gain} KP 與 1 點文化積分")
                 # give elder score
                 for p in state['players'].values():
                     if p['role'] == 'elder' and p['id'] != player['id']:
@@ -509,6 +551,12 @@ def handle_toggle_ready():
                     p['ap'] = min(p['max_ap'], p['ap'] + rec)
                     add_log(room_code, f"⚡ {p['name']} 體力恢復，增加 {rec} AP (現有: {p['ap']}/{p['max_ap']} AP)")
                     
+                if state['month'] == 2:
+                    for p in state['players'].values():
+                        if p['location'] == '山林':
+                            p['location'] = '灘頭工作室'
+                            add_log(room_code, f"飛魚禁令：為避免觸犯禁忌，{p['name']} 已自動退出山林，回到灘頭工作室。")
+                            
                 if state['month'] == 5:
                     for p in state['players'].values():
                         if p['materials'] > 0:
@@ -539,5 +587,5 @@ def handle_toggle_ready():
         socketio.emit('state_update', state, to=room_code)
 
 if __name__ == '__main__':
-    print("Starting Server...")
-    socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
+    print("Starting Server with Eventlet...")
+    socketio.run(app, host='0.0.0.0', port=5000)

@@ -1,4 +1,11 @@
-const socket = io();
+const socket = io({
+    reconnection: true,
+    reconnectionAttempts: 15,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 8000,
+    timeout: 20000,
+    transports: ['websocket', 'polling']
+});
 // Removed mermaid
 
 // ── Vanilla TextType Component for Premium Cinematic Titles ─────────────────
@@ -1638,16 +1645,27 @@ startGameBtn.addEventListener('click', () => {
 });
 
 // Socket Events
+let myOldId = null;
 socket.on('connect', () => {
-    myId = socket.id;
+    if (myId) {
+        myOldId = myId;
+        myId = socket.id;
+        if (lastGameState) {
+            socket.emit('rejoin_game', { old_id: myOldId, room_code: lastGameState.room_code });
+        }
+    } else {
+        myId = socket.id;
+    }
 });
 
 socket.on('error', (err) => {
     showToast(err.msg);
-    if(err.msg === '遊戲已開始' && waitingSection.style.display === 'block') {
-        waitingSection.style.display = 'none';
-        joinSection.style.display = 'block';
-    }
+    // Ensure we go back to the login screen if an error occurs (e.g. wrong room code)
+    avatarScreen.classList.remove('active');
+    gameScreen.classList.remove('active');
+    lobbyScreen.classList.add('active');
+    waitingSection.style.display = 'none';
+    joinSection.style.display = 'block';
 });
 
 socket.on('state_update', (state) => {
@@ -2089,6 +2107,7 @@ function renderGame(state) {
     const locMap = { '山林': [], '灘頭工作室': [], '商店': [] };
     
     let youthOptions = '';
+    let amIElder = false;
     
     const steps = translations[currentLang].game.steps;
     
@@ -2205,8 +2224,9 @@ function renderGame(state) {
         }
 
         // Teach targets
-        if (p.role === 'youth') {
-            youthOptions += `<option value="${id}">${p.name}</option>`;
+        if (p.role === 'youth' || p.role === 'middle') {
+            const roleSuffix = p.role === 'middle' ? ' (協商者)' : ' (青年)';
+            youthOptions += `<option value="${id}">${p.name}${roleSuffix}</option>`;
         }
 
         // My status
@@ -2219,15 +2239,19 @@ function renderGame(state) {
                 <div class="status-item"><span class="status-label">${translations[currentLang].game.statusLabels[4]}</span><span class="status-val">${p.score}</span></div>
             `;
             
-            if (p.role === 'youth') {
+            if (p.role === 'youth' || p.role === 'middle') {
                 askBtn.style.display = 'block';
+                const baseCost = p.role === 'youth' ? 3 : 1;
+                const cost = state.month === 4 ? baseCost + 1 : baseCost;
+                const gain = p.role === 'youth' ? 3 : 1;
+                const title = currentLang === 'en' ? '💬 Ask Elder' : '💬 向耆老請益';
+                askBtn.innerHTML = `${title} <span style="font-size:0.8rem;opacity:0.7;font-weight:normal;">(${cost} AP ➔ ${gain} KP)</span>`;
             } else {
                 askBtn.style.display = 'none';
             }
             
             if (p.role === 'elder') {
-                teachContainer.style.display = 'flex';
-                teachTargetSelect.innerHTML = youthOptions;
+                amIElder = true;
             } else {
                 teachContainer.style.display = 'none';
             }
@@ -2240,6 +2264,15 @@ function renderGame(state) {
                 nextMonthBtn.textContent = translations[currentLang].game.readyBtnNotReady;
                 nextMonthBtn.className = 'btn primary glow-btn';
             }
+        }
+    }
+
+    if (amIElder) {
+        teachContainer.style.display = 'flex';
+        if (youthOptions === '') {
+            teachTargetSelect.innerHTML = `<option value="">(${currentLang === 'en' ? 'No target available' : '無可指導對象'})</option>`;
+        } else {
+            teachTargetSelect.innerHTML = youthOptions;
         }
     }
 

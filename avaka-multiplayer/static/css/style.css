@@ -1059,9 +1059,9 @@ header {
     .lobby-card { padding: 1.5rem; }
     
     /* Fix Title Overflow */
-    .title-wrapper { height: 7rem; margin-bottom: 2rem; }
-    .glow-text { font-size: 2.2rem; width: 100%; margin-left: 0; }
-    .bg-subtitle { font-size: 3rem; top: -1rem; gap: 0.5rem; }
+    .title-wrapper { height: auto; margin-bottom: 2rem; position: relative; padding-top: 1rem; }
+    .glow-text { font-size: 2.2rem; width: 100%; margin-left: 0; position: relative; z-index: 2; margin-top: 1rem; }
+    .bg-subtitle { font-size: 3rem; top: 0; gap: 0.2rem; position: absolute; z-index: 1; opacity: 0.4; }
     
     /* Header layout */
     header { flex-direction: column; gap: 1rem; padding: 1rem; text-align: center; }
@@ -1780,9 +1780,298 @@ header {
         padding: 3rem;
     }
     .role-selector {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
     }
 }
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — Portrait & Landscape
+   Uses high-specificity selectors to reliably override grid system
+   ═══════════════════════════════════════════════════════════════ */
 
+/* ── Disable desktop cursor on touch devices ── */
+@media (hover: none) and (pointer: coarse) {
+    #cursor-dot, #cursor-halo, #cursor-leaf, .cursor-ripple { display: none !important; }
+    body { cursor: auto !important; }
+    .location-card, .floating-element { animation: none !important; }
+}
 
+/* ══════════════════════════════════════════════════════════
+   PORTRAIT MODE: max-width 768px
+   Game turns into full vertical scroll layout
+   ══════════════════════════════════════════════════════════ */
+@media screen and (max-width: 768px) {
+
+    /* Game screen — scrollable column */
+    /* Game screen — natural scrolling */
+    #game.screen {
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+
+    /* Header */
+    #game header {
+        flex-direction: column !important;
+        padding: 0.6rem 0.8rem !important;
+        gap: 0.4rem !important;
+        text-align: center;
+        position: relative; /* removing sticky since flex container handles it */
+        z-index: 100;
+        background: var(--bg-dark, #020617);
+        flex-shrink: 0;
+    }
+    #game header .month-info { flex-direction: row; gap: 0.4rem; justify-content: center; }
+    #game header .month-badge { font-size: 0.9rem; padding: 0.3rem 0.6rem; }
+    #game header .month-details h2 { font-size: 0.95rem; }
+    #game header .month-details p { font-size: 0.75rem; }
+    #game header .header-actions {
+        width: 100%; display: flex; gap: 0.4rem;
+        justify-content: center; flex-wrap: wrap;
+    }
+    #game header .header-actions .btn { font-size: 0.72rem; padding: 0.35rem 0.55rem; }
+
+    /* Main layout — force to flex column, override grid entirely */
+    #game .main-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: unset !important;
+        gap: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* Sidebar — compact horizontal scrolling player strip */
+    #game .main-layout aside.sidebar {
+        padding: 0.5rem 0.7rem !important;
+        border-radius: 0 !important;
+        border-bottom: 1px solid var(--glass-border);
+        overflow: visible !important;
+        max-height: none !important;
+    }
+    #game .main-layout aside.sidebar > h3 { display: none !important; }
+    #game #players-list {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0.5rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 0.4rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+    #game .pc-card-wrapper {
+        min-width: 195px !important;
+        max-width: 210px !important;
+        width: auto !important;
+        flex-shrink: 0 !important;
+        scroll-snap-align: start;
+        margin-bottom: 0 !important;
+    }
+    #game .pc-card-wrapper .pc-inside { padding: 0.65rem !important; }
+
+    /* Content area — scrollable naturally by body */
+    #game .content-area {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.8rem !important;
+        flex: 1 !important;
+        overflow: visible !important;
+        padding: 0.8rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    /* Map area — vertical stack */
+    #game .map-area {
+        flex-direction: column !important;
+        gap: 0.7rem !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+    #game .map-area .location-card {
+        flex: none !important;
+        width: 100% !important;
+        min-width: unset !important;
+        max-width: 100% !important;
+        padding: 0.9rem !important;
+        animation: none !important;
+    }
+    #game .location-card h3 { font-size: 0.95rem; }
+    #game .location-card .desc { font-size: 0.8rem; margin-bottom: 0.7rem; }
+
+    /* Action buttons — 2 columns */
+    #game .action-grid, #game .craft-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.4rem !important;
+    }
+    #game .btn.action-btn { font-size: 0.74rem !important; padding: 0.5rem 0.3rem !important; }
+
+    /* Special actions panel */
+    .special-actions-panel {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+        padding: 0.8rem 1rem !important;
+        justify-content: center !important;
+    }
+    #ask-btn, #teach-btn { font-size: 0.75rem !important; padding: 0.45rem 0.6rem !important; }
+    .teach-box-premium { flex-wrap: wrap !important; gap: 0.4rem !important; }
+
+    /* Player action bar - fixed at bottom with sticky */
+    #game .player-actions {
+        position: sticky !important;
+        bottom: 0 !important;
+        flex-direction: column !important;
+        padding: 0.8rem !important;
+        padding-bottom: env(safe-area-inset-bottom, 0.8rem) !important;
+        gap: 0.6rem !important;
+        align-items: stretch !important;
+        margin-top: auto !important;
+        flex-shrink: 0 !important;
+        border-top: 1px solid rgba(255,255,255,0.1) !important;
+        background: rgba(10, 15, 25, 0.98) !important;
+        z-index: 1000 !important;
+        box-shadow: 0 -10px 20px rgba(0,0,0,0.5) !important;
+    }
+    #game #my-status {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.4rem !important;
+        font-size: 0.82rem !important;
+    }
+    #game .status-item { align-items: center !important; text-align: center !important; }
+    #game .status-val { font-size: 0.95rem !important; }
+    #game .special-actions { flex-wrap: wrap !important; gap: 0.4rem !important; justify-content: center !important; }
+    #game #next-month-btn { width: 100% !important; }
+    #game #leave-game-btn { display: none; } /* already in sticky header */
+
+    /* Logs */
+    #game .logs-panel { padding: 0.7rem !important; }
+    #game #logs { max-height: 200px !important; overflow-y: auto; }
+    #game .log-entry { font-size: 0.76rem !important; padding: 0.45rem 0.6rem !important; }
+
+    /* Chat */
+    #game .chat-section { padding: 0.7rem !important; }
+    #game #chat-messages { max-height: 110px !important; font-size: 0.82rem; }
+    #game #chat-input { font-size: 0.82rem; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   LANDSCAPE MODE: max-height 500px (phone sideways)
+   Compact 2-column layout that fits in one viewport
+   ══════════════════════════════════════════════════════════ */
+@media screen and (max-height: 500px) and (max-width: 960px) {
+
+    #game.screen {
+        padding: 0 !important;
+        flex-direction: column !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+    }
+
+    /* Compact sticky header */
+    #game header {
+        padding: 0.3rem 0.8rem !important;
+        gap: 0.3rem !important;
+        position: sticky; top: 0; z-index: 100;
+        background: var(--bg-dark, #020617);
+        flex-shrink: 0;
+    }
+    #game header .month-details p { display: none; } /* too little space */
+    #game header .month-badge { font-size: 0.82rem; padding: 0.25rem 0.5rem; }
+    #game header .header-actions .btn { font-size: 0.68rem; padding: 0.28rem 0.45rem; }
+
+    /* Main layout — sidebar + map side by side */
+    #game .main-layout {
+        display: grid !important;
+        grid-template-columns: 175px 1fr !important;
+        gap: 0 !important;
+        flex: 1;
+        overflow: hidden !important;
+        height: calc(100dvh - 90px) !important;
+    }
+
+    /* Sidebar — narrow scrollable column */
+    #game .main-layout aside.sidebar {
+        padding: 0.4rem 0.5rem !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        height: 100%;
+        border-right: 1px solid var(--glass-border);
+    }
+    #game .main-layout aside.sidebar > h3 { font-size: 0.75rem !important; margin-bottom: 0.4rem !important; }
+    #game #players-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.4rem;
+    }
+    #game .pc-card-wrapper {
+        width: 100% !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        margin-bottom: 0 !important;
+    }
+    #game .pc-card-wrapper .pc-inside { padding: 0.5rem !important; }
+    #game .player-name { font-size: 0.78rem !important; }
+    #game .player-traits { display: none !important; }
+    #game .player-stats-grid .stat-label { font-size: 0.58rem !important; }
+    #game .player-stats-grid .stat-value { font-size: 0.72rem !important; }
+    #game .player-footer { padding-top: 0.3rem !important; }
+
+    /* Content area */
+    #game .content-area {
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+        flex: 1;
+    }
+
+    /* Map area — horizontal scroll */
+    #game .map-area {
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 0.4rem !important;
+        scroll-snap-type: x mandatory;
+        flex: 1;
+    }
+    #game .map-area .location-card {
+        min-width: 200px !important;
+        max-width: 240px !important;
+        flex-shrink: 0 !important;
+        scroll-snap-align: start;
+        padding: 0.6rem !important;
+        animation: none !important;
+        overflow-y: auto;
+    }
+    #game .location-card h3 { font-size: 0.82rem; }
+    #game .location-card .desc { font-size: 0.72rem; margin-bottom: 0.4rem; }
+    #game .action-grid, #game .craft-grid { gap: 0.3rem !important; }
+    #game .btn.action-btn { font-size: 0.68rem !important; padding: 0.35rem 0.25rem !important; }
+
+    /* Player action bar — compact single row */
+    #game .player-actions {
+        padding: 0.4rem 0.8rem !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 0.6rem !important;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+        margin-top: 0 !important;
+    }
+    #game #my-status { display: flex !important; gap: 0.8rem !important; font-size: 0.75rem !important; }
+    #game .status-val { font-size: 0.85rem !important; }
+    #game #next-month-btn { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
+    #game #leave-game-btn { display: none; }
+
+    /* Hide logs & chat in landscape — space too limited */
+    #game .sys-logs, #game .chat-section,
+    .special-actions-panel { display: none !important; }
+}
