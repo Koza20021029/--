@@ -407,9 +407,9 @@ const translations = {
 
                 <h3>👤 角色能力介紹</h3>
                 <ul>
-                    <li><strong>👑 資深工匠 (耆老)：</strong> Max AP 4 (每月恢復 +3)，開局 10 KP。傳統技藝純熟，執行最終「填縫」不耗 AP；能遠程消耗 2 AP 指導青年獲得 KP。</li>
+                    <li><strong>👑 資深工匠 (耆老)：</strong> Max AP 4 (每月恢復 +3)，開局 10 KP。傳統技藝純熟，執行最終「填縫」不耗 AP；能遠程消耗 2 AP 指導青年或協商者獲得 KP。</li>
                     <li><strong>🏃 青年學徒 (部落青年)：</strong> Max AP 6 (每月恢復 +4)，開局 0 KP。步伐輕快，移動不耗 AP；向耆老「請益 (3 AP)」能獲得 3 KP。</li>
-                    <li><strong>⚖️ 協商者 (中年工匠)：</strong> Max AP 5 (每月恢復 +3)，開局 5 KP。擔任傳統與現代橋樑，若購買工業材料完工可獲得加分且免除扣分。</li>
+                    <li><strong>⚖️ 協商者 (中年工匠)：</strong> Max AP 5 (每月恢復 +3)，開局 5 KP。擔任傳統與現代橋樑，若購買工業材料完工可獲得加分且免除扣分；溝通無礙，向耆老「請益 (1 AP)」可獲得 1 KP，也能接受遠程指導。</li>
                 </ul>
 
                 <h3>🗺️ 造船路徑流程圖</h3>
@@ -656,9 +656,9 @@ const translations = {
 
                 <h3>👤 Character Roles</h3>
                 <ul>
-                    <li><strong>👑 Master Artisan (Elder):</strong> Max AP 4 (+3/mo rec), starts with 10 KP. Caulk costs 0 AP; can guide apprentices remotely (2 AP) to grant them KP.</li>
+                    <li><strong>👑 Master Artisan (Elder):</strong> Max AP 4 (+3/mo rec), starts with 10 KP. Caulk costs 0 AP; can guide apprentices or negotiators remotely (2 AP) to grant them KP.</li>
                     <li><strong>🏃 Young Apprentice (Youth):</strong> Max AP 6 (+4/mo rec), starts with 0 KP. Light-footed, move costs 0 AP; learning from Elder (3 AP) grants 3 KP.</li>
-                    <li><strong>⚖️ Negotiator (Middle):</strong> Max AP 5 (+3/mo rec), starts with 5 KP. Bridges traditional & modern; using resin grants bonus without penalty.</li>
+                    <li><strong>⚖️ Negotiator (Middle):</strong> Max AP 5 (+3/mo rec), starts with 5 KP. Bridges traditional & modern; using resin grants bonus without penalty; can casually ask Elder for guidance (1 AP) to gain 1 KP.</li>
                 </ul>
 
                 <h3>🗺️ Shipbuilding Flowchart</h3>
@@ -1024,7 +1024,7 @@ function applyLanguage() {
     if (gameLeaveBtn) gameLeaveBtn.textContent = t.game.leaveGameBtn;
     
     const gameRulesLoreBtn = document.getElementById('open-lore-btn');
-    if (gameRulesLoreBtn) gameRulesLoreBtn.textContent = currentLang === 'en' ? '📖 Lore Details' : '📖 夜曆細節';
+    if (gameRulesLoreBtn) gameRulesLoreBtn.textContent = currentLang === 'en' ? '📖 Effect & Lore' : '📖 當月效果與夜曆';
     
     const gameCloseLoreBtn = document.getElementById('close-lore-btn');
     if (gameCloseLoreBtn) gameCloseLoreBtn.textContent = currentLang === 'en' ? 'Close' : '關閉';
@@ -1245,18 +1245,18 @@ const scriptEvents = {
 };
 
 const GAME_RULES = [
-    {name: "Kashyman", desc_zh: "準備月: 移動不消耗 AP。", desc_en: "Prep Month: Movement costs 0 AP."},
-    {name: "Kapowan", desc_zh: "飛魚禁令: 禁止進入山林，無法採集。", desc_en: "Flying Fish Ban: Forest closed. Cannot gather."},
-    {name: "Pikaokaod", desc_zh: "捕撈飛魚盛期: 在灘頭執行工序 AP 消耗減 1。", desc_en: "Peak Fishing: Crafting at beach costs -1 AP."},
-    {name: "Papataw", desc_zh: "男人勤於出海: 請益消耗 AP 加倍 (需 4 AP)。", desc_en: "Men at Sea: Learning from Elder costs double AP (4 AP)."},
-    {name: "Pipilapila", desc_zh: "梅雨季節: 請注意 AP 管理。", desc_en: "Plum Rain Season: Watch out for AP maintenance fees."},
-    {name: "Apiya vehan", desc_zh: "好月節: 執行填縫額外 +2 分。", desc_en: "Good Month Festival: Caulking grants +2 bonus score."},
-    {name: "Pehhakow", desc_zh: "解禁重啟: 山林開放，採集獲 2 份材料。", desc_en: "Forest Reopened: Gathering yields 2x materials."},
-    {name: "Pitanatana", desc_zh: "土器月: 科學轉譯必成功 (可維修獎勵)。", desc_en: "Clay Vessel Month: Tech translation always succeeds."},
-    {name: "Kalimman", desc_zh: "飛魚終食祭: 商店材料價格加倍。", desc_en: "Final Fish Feast: Store prices are doubled."},
-    {name: "Kaneman", desc_zh: "禁忌之月: 無法執行完工 (填縫)。", desc_en: "Forbidden Month: Caulking (finishing ship) is strictly banned."},
-    {name: "Kapitowan", desc_zh: "祭神月: 青年與耆老同區域，KP 自動 +2。", desc_en: "Sacred Month: Apprentice in same area as Elder gets +2 KP."},
-    {name: "Kaowan", desc_zh: "手工藝月: 捻線不再消耗 AP。", desc_en: "Handicraft Month: Twining fiber costs 0 AP."}
+    {name: "Kashyman", desc_zh: "準備月：移動不消耗 AP。", desc_en: "Prep Month: Movement costs 0 AP."},
+    {name: "Kapowan", desc_zh: "飛魚禁令：禁止進入山林（會被強制退回灘頭），無法執行採集動作。", desc_en: "Flying Fish Ban: Forest closed. Cannot move to or gather in forest."},
+    {name: "Pikaokaod", desc_zh: "捕撈飛魚盛期：在灘頭工作室執行「剝麻」與「搓繩」動作，AP 消耗減少 1 點。", desc_en: "Peak Fishing: Crafting at beach costs -1 AP."},
+    {name: "Papataw", desc_zh: "男人勤於出海：青年向長老「請益」的消耗增至 4 AP（原為 3），協商者增至 2 AP（原為 1）。", desc_en: "Men at Sea: Learning from Elder costs +1 AP (Youth: 4, Middle: 2)."},
+    {name: "Pipilapila", desc_zh: "梅雨季節：回合開始時，若持有材料需自動扣除 1 AP 防潮；若 AP 不足，材料將腐爛歸零。", desc_en: "Plum Rain Season: Start of month deducts 1 AP if holding materials; if 0 AP, materials rot to 0."},
+    {name: "Apiya vehan", desc_zh: "好月節：執行最終「填縫」動作（完成造船）時，總分額外加 2 分。", desc_en: "Good Month Festival: Caulking (finishing ship) grants +2 bonus score."},
+    {name: "Pehhakow", desc_zh: "解禁重啟：山林解禁，執行「採集」動作（消耗 3 AP）可獲得 2 份材料（原為 1 份）。", desc_en: "Forest Reopened: Gathering yields 2 materials instead of 1."},
+    {name: "Pitanatana", desc_zh: "土器月：購買工業材料後執行「科技轉譯」時必定成功，無須進行機率檢定。", desc_en: "Clay Vessel Month: Tech translation (industrial materials) always succeeds."},
+    {name: "Kalimman", desc_zh: "飛魚終食祭：商店內所有物品購買價格翻倍（材料由 3 KP 變為 6 KP）。", desc_en: "Final Fish Feast: Store prices are doubled (Material costs 6 KP instead of 3)."},
+    {name: "Kaneman", desc_zh: "禁忌之月：嚴禁執行「填縫」動作（無法在該月份完成造船）。", desc_en: "Forbidden Month: Caulking (finishing ship) is strictly banned."},
+    {name: "Kapitowan", desc_zh: "祭神月：回合開始時，若青年/協商者與長老處於同一個地點，可自動獲得 2 點 KP。", desc_en: "Sacred Month: Apprentice in same area as Elder automatically gets +2 KP."},
+    {name: "Kaowan", desc_zh: "手工藝月：在灘頭工作室執行「搓繩」動作消耗 0 AP（原為 1 AP）。", desc_en: "Handicraft Month: Twining fiber costs 0 AP instead of 1."}
 ];
 
 function showMonthEventModal(month) {
@@ -1841,9 +1841,17 @@ document.addEventListener('click', (e) => {
         const lore = monthLoreData[month];
         if (lore) {
             const isEn = currentLang === 'en';
+            const ruleDesc = isEn ? GAME_RULES[month - 1].desc_en : GAME_RULES[month - 1].desc_zh;
             document.getElementById('lore-title').textContent = document.getElementById('month-name').textContent;
             document.getElementById('lore-subtitle').textContent = isEn ? lore.title_en : lore.title_zh;
-            document.getElementById('lore-content').innerHTML = isEn ? lore.desc_en : lore.desc_zh;
+            
+            const loreText = isEn ? lore.desc_en : lore.desc_zh;
+            const effectHtml = `<div style="background:rgba(212,175,55,0.1); border-left:4px solid var(--primary); padding:10px; margin-bottom:15px; border-radius:4px;">
+                <strong>${isEn ? '✨ Special Effect' : '✨ 本月特殊效果'}：</strong><br>
+                ${ruleDesc}
+            </div>`;
+            
+            document.getElementById('lore-content').innerHTML = effectHtml + loreText;
             document.getElementById('lore-modal').style.display = 'flex';
         }
     } else if (e.target.id === 'close-lore-btn') {

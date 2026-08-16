@@ -73,18 +73,18 @@ ROLES = {
 
 
 MONTH_RULES = [
-    {"month": 1, "name": "Kashyman", "desc": "準備月: 移動不消耗 AP。"},
-    {"month": 2, "name": "Kapowan", "desc": "飛魚禁令: 禁止進入山林，無法採集。"},
-    {"month": 3, "name": "Pikaokaod", "desc": "捕撈飛魚盛期: 在灘頭執行工序 AP 消耗減 1。"},
-    {"month": 4, "name": "Papataw", "desc": "男人勤於出海: 請益消耗 AP 加倍 (需 4 AP)。"},
-    {"month": 5, "name": "Pipilapila", "desc": "梅雨季節: 請注意 AP 管理。"},
-    {"month": 6, "name": "Apiya vehan", "desc": "好月節: 執行填縫額外 +2 分。"},
-    {"month": 7, "name": "Pehhakow", "desc": "解禁重啟: 山林開放，採集獲 2 份材料。"},
-    {"month": 8, "name": "Pitanatana", "desc": "土器月: 科學轉譯必成功。"},
-    {"month": 9, "name": "Kalimman", "desc": "飛魚終食祭: 商店材料價格加倍。"},
-    {"month": 10, "name": "Kaneman", "desc": "禁忌之月: 無法執行完工 (填縫)。"},
-    {"month": 11, "name": "Kapitowan", "desc": "祭神月: 青年與耆老同區域，KP 自動 +2。"},
-    {"month": 12, "name": "Kaowan", "desc": "手工藝月: 捻線不再消耗 AP。"}
+    {"month": 1, "name": "Kashyman", "desc": "準備月：移動不消耗 AP。"},
+    {"month": 2, "name": "Kapowan", "desc": "飛魚禁令：禁止進入山林（會被強制退回灘頭），無法執行採集動作。"},
+    {"month": 3, "name": "Pikaokaod", "desc": "捕撈飛魚盛期：在灘頭工作室執行「剝麻」與「搓繩」動作，AP 消耗減少 1 點。"},
+    {"month": 4, "name": "Papataw", "desc": "男人勤於出海：青年向長老「請益」的消耗增至 4 AP（原為 3），協商者增至 2 AP（原為 1）。"},
+    {"month": 5, "name": "Pipilapila", "desc": "梅雨季節：回合開始時，若持有材料需自動扣除 1 AP 防潮；若 AP 不足，材料將腐爛歸零。"},
+    {"month": 6, "name": "Apiya vehan", "desc": "好月節：執行最終「填縫」動作（完成造船）時，總分額外加 2 分。"},
+    {"month": 7, "name": "Pehhakow", "desc": "解禁重啟：山林解禁，執行「採集」動作（消耗 3 AP）可獲得 2 份材料（原為 1 份）。"},
+    {"month": 8, "name": "Pitanatana", "desc": "土器月：購買工業材料後執行「科技轉譯」時必定成功，無須進行機率檢定。"},
+    {"month": 9, "name": "Kalimman", "desc": "飛魚終食祭：商店內所有物品購買價格翻倍（材料由 3 KP 變為 6 KP）。"},
+    {"month": 10, "name": "Kaneman", "desc": "禁忌之月：嚴禁執行「填縫」動作（無法在該月份完成造船）。"},
+    {"month": 11, "name": "Kapitowan", "desc": "祭神月：回合開始時，若青年/協商者與長老處於同一個地點，可自動獲得 2 點 KP。"},
+    {"month": 12, "name": "Kaowan", "desc": "手工藝月：在灘頭工作室執行「搓繩」動作消耗 0 AP（原為 1 AP）。"}
 ]
 
 def add_log(room_code, msg):
