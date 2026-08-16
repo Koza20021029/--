@@ -219,47 +219,51 @@
                         <li><strong>⚡ 行動點數 (AP) 與月度恢復：</strong> 執行採集(3 AP)、工序(3 AP)、請益(3 AP)、指導(2 AP)、轉譯(2 AP)、移動(1 AP, 青年/1月 0 AP)或贈送材料(1 AP)皆需消耗 AP。每個月初進行體力恢復（青年 +4 AP、中生代/耆老 +3 AP）。</li>
                         <li><strong>🤝 團隊合作與傳承得分：</strong> 青年向長輩「請益 (3 AP)」，青年獲得 +3 KP 且<b>雙方各得 +1 分傳承分數</b>；耆老「遠程指導 (2 AP)」為學徒 +1 KP 且<b>獲得 +1 分</b>；「贈與材料 (1 AP)」可跨角色補充物資。</li>
                         <li><strong>🔬 科學轉譯 (判定與得分)：</strong> 消耗 2 AP 與 2 KP。依據現有 KP 判定成功率（成功率 = 50% + KP×5%，中生代額外 +20%）；<b>第 8 個月 (Pitanatana 土器月) 100% 必定成功！</b> 成功將獲得 <b>+4 分文化韌性得分</b> 與 <b>2 份材料</b>獎勵！</li>
-                        <li><strong>⏳ 跨月乾燥等待期：</strong> 每完成一項造船工序，須進入<b>下一個月份</b>才能執行下一工序。</li>
-                        <li><strong>🌿 材料需求與團隊分工：</strong> 造船 4 工序各需 1 份材料（全船共 4 份）。青年移動快宜採集與贈與材料，耆老則指導傳承。</li>
-                        <li><strong>💡 技術點數 (KP)：</strong> 傳統知識。解鎖工序需 3 KP (捻線) 與 8 KP (填縫)。</li>
+                        <li><strong>⏳ 跨月冷卻限制：</strong> 除「步驟一」可於同月份重複執行外，步驟二至步驟六皆必須在<b>不同月份</b>執行（需等待植物熟化或乾燥）。</li>
+                        <li><strong>🌿 材料獲取與消耗：</strong> 移除了單純的採集動作。現在必須在山林執行「步驟一：砍伐剝皮」來產出 ✂️ 材料。後續的步驟皆需消耗此材料。</li>
+                        <li><strong>💡 技術點數 (KP)：</strong> 代表傳統知識的累積。最終的步驟六「填縫完工」需具備 8 KP 才能執行。</li>
                     </ul>
 
                     <h3>👤 角色能力介紹</h3>
                     <ul>
-                        <li><strong>👑 資深工匠 (耆老)：</strong> Max AP 4 (每月恢復 +3)，開局 10 KP。傳統技藝純熟，執行最終「填縫」不耗 AP；能遠程消耗 2 AP 指導青年獲得 KP。</li>
-                        <li><strong>🏃 青年學徒 (部落青年)：</strong> Max AP 6 (每月恢復 +4)，開局 0 KP。步伐輕快，移動不耗 AP；向耆老「請益 (3 AP)」能獲得 3 KP。</li>
-                        <li><strong>⚖️ 協商者 (中年工匠)：</strong> Max AP 5 (每月恢復 +3)，開局 5 KP。擔任傳統與現代橋樑，若購買工業材料完工可獲得加分且免除扣分。</li>
+                        <li><strong>👑 資深工匠 (耆老)：</strong> Max AP 4 (每月恢復 +3)，開局 10 KP。傳統技藝純熟，能遠程消耗 2 AP 指導青年獲得 KP；並擁有足夠 KP 完成最後的造船步驟。</li>
+                        <li><strong>🏃 青年學徒 (部落青年)：</strong> Max AP 6 (每月恢復 +4)，開局 0 KP。步伐輕快，移動不耗 AP；向耆老「請益 (3 AP)」能獲得 3 KP 以彌補知識不足。</li>
+                        <li><strong>⚖️ 協商者 (中年工匠)：</strong> Max AP 5 (每月恢復 +3)，開局 5 KP。擔任傳統與現代橋樑，若走現代化路線去商店購買工業樹脂，可獲得額外加分且免除傳統斷裂扣分。</li>
                     </ul>
 
-                    <h3>🗺️ 造船路徑流程圖</h3>
+                    <h3>🗺️ 達悟族造船六步驟流程圖</h3>
                     <div class="css-flowchart">
-                        <div class="fc-node fc-start">開始造船 (需要 4 份材料 + 跨月乾燥)</div>
+                        <div class="fc-node fc-start" style="background: rgba(76, 175, 80, 0.2); border-color: #4CAF50;">🌲 階段一：山林前置處理 (地點：山林)</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node">① 砍伐剝皮 (3 AP)<br><small style="color:#FFF59D;">產出 ✂️ 1 材，無冷卻可重複執行</small></div>
+                        <div class="fc-arrow">↓ 跨月冷卻</div>
+                        <div class="fc-node">② 懸掛摩擦 (3 AP | 耗 ✂️ 1 材)</div>
+                        <div class="fc-arrow">↓ 跨月冷卻</div>
+                        <div class="fc-node">③ 劃痕撕絲 (3 AP | 耗 ✂️ 1 材)</div>
+                        
+                        <div class="fc-arrow" style="margin: 15px 0; color: #FFF;">🔻 準備進入加工階段 🔻</div>
                         
                         <div class="fc-branches">
                             <div class="fc-branch traditional">
-                                <div class="fc-label">🌟 傳統路線 (高分 / 完美傳承)</div>
-                                <div class="fc-node">前往 🌲 山林 (採集 3 AP)</div>
+                                <div class="fc-label" style="background: rgba(255, 193, 7, 0.2); border-color: #FFC107;">🌟 傳統路線 (前往 🛖 灘頭工作室)</div>
+                                <div class="fc-node">④ 脫水曝曬 (3 AP | 耗 ✂️ 1 材)</div>
+                                <div class="fc-arrow">↓ 跨月乾燥</div>
+                                <div class="fc-node">⑤ 理線搓捻 (1 AP | 耗 ✂️ 1 材)</div>
+                                <div class="fc-arrow">↓ 跨月冷卻</div>
+                                <div class="fc-node">⑥ 填縫完工 (3 AP | 需 🎓 8 KP + ✂️ 1 材)</div>
                                 <div class="fc-arrow">↓</div>
-                                <div class="fc-node">前往 🛖 灘頭 (① 剝麻 3 AP | 需 1 材料)</div>
-                                <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
-                                <div class="fc-node">② 刮絲 (3 AP | 需 1 材料)</div>
-                                <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
-                                <div class="fc-node">③ 捻線 (3 AP | 需 3 KP + 1 材料)</div>
-                                <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
-                                <div class="fc-node">④ 填縫完工 (3 AP | 需 8 KP + 1 材料)</div>
-                                <div class="fc-arrow">↓</div>
-                                <div class="fc-node fc-win">傳承成功！</div>
+                                <div class="fc-node fc-win">🏆 傳統工藝傳承成功！</div>
                             </div>
                             
                             <div class="fc-branch modern">
-                                <div class="fc-label">⚠️ 現代化路線 (低分 / 文化斷裂)</div>
-                                <div class="fc-node">完成 ① 剝麻</div>
-                                <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
-                                <div class="fc-node">前往 🏬 商店</div>
+                                <div class="fc-label" style="background: rgba(244, 67, 54, 0.2); border-color: #F44336;">⚠️ 現代化路線 (前往 🏬 商店)</div>
+                                <div class="fc-node" style="background: rgba(255,255,255,0.05); color: #999;">(必須先完成山林步驟 ①～③)</div>
                                 <div class="fc-arrow">↓</div>
-                                <div class="fc-node">購買樹脂完工 (3 AP | 需 2 材料)</div>
+                                <div class="fc-node">購買工業樹脂 (耗 🎓 3 KP)</div>
                                 <div class="fc-arrow">↓</div>
-                                <div class="fc-node fc-lose">完工，但去技能化</div>
+                                <div class="fc-node">取代灘頭加工，瞬間完工</div>
+                                <div class="fc-arrow">↓</div>
+                                <div class="fc-node fc-lose">完工，但失去部分文化連結</div>
                             </div>
                         </div>
                     </div>
@@ -560,11 +564,13 @@
                             <h3>🌲 山林</h3>
                             <span class="badge">資源區</span>
                         </div>
-                        <p class="desc">採集 Avaka與蘭嶼花椒的區域</p>
+                        <p class="desc">採集 Avaka 假莖與蘭嶼花椒的區域（前三道工序在此執行）</p>
                         <div class="players-here"></div>
                         <div class="action-grid">
                             <button class="btn action-btn move-btn">移動至此 (1 AP)</button>
-                            <button class="btn action-btn gather-btn">採集資源 (3 AP)</button>
+                            <button class="btn action-btn craft-btn" data-step="chop" title="操作者（傳統上由男性擔任）進入家族撫育的林地或果園（sibo）中，挑選生長成熟之馬尼拉麻假莖。使用開山刀自接近地面之基部將假莖砍斷，隨即去除假莖頂端之葉片與非纖維組織，僅保留長條狀假莖，並隨後將假莖外層之葉鞘（即莖皮）進行逐層剝離。">① 砍伐剝皮 ipana'ape (3 AP | 產出材料)</button>
+                            <button class="btn action-btn craft-btn" data-step="rub" title="將剝離之假莖葉鞘掛於林間樹枝上，操作者雙手緊執葉鞘之兩端，以身體重心帶動，使葉鞘在樹枝表面進行「左右來回拉動」之機械摩擦。此工序之目的在於利用摩擦產生之物理拉力與微幅熱能，破壞假莖中堅韌的半纖維素與木質化結構，使其植物組織趨於柔軟，利於後續之分絲。">② 懸掛摩擦軟化 (3 AP | 需 1 材料 + 跨月)</button>
+                            <button class="btn action-btn craft-btn" data-step="strip" title="操作者呈坐姿，使用小刀（ipanagan）在已軟化之葉鞘內層中央處進行縱向割劃，建立定位痕跡。隨後，以手部指尖捏住假莖切口，順應植物維管束之天然縱向排列走向，向末端施力拉扯，將細韌之纖維（雅美語稱 chingdasan）自葉鞘中剝離。此一「撕絲」工法可避免橫向工具刮削所造成之微觀物理損傷，完整保留纖維之天然抗拉強度。剝離之纖維經分類綑綁後，裝入作業袋運回部落。">③ 劃痕撕絲 chingdasan (3 AP | 需 1 材料 + 跨月)</button>
                         </div>
                     </div>
 
@@ -573,14 +579,13 @@
                             <h3>🛖 灘頭工作室</h3>
                             <span class="badge primary-badge">工藝核心</span>
                         </div>
-                        <p class="desc">造船工序的執行區域，充滿傳統智慧與汗水</p>
+                        <p class="desc">纖維加工與最終造船工序的執行區域（後三道工序在此執行）</p>
                         <div class="players-here"></div>
                         <div class="action-grid craft-grid">
                             <button class="btn action-btn move-btn">移動至此 (1 AP)</button>
-                            <button class="btn action-btn craft-btn" data-step="peel">① 剝麻 (3 AP | 需 1 材料)</button>
-                            <button class="btn action-btn craft-btn" data-step="scrape">② 刮絲 (3 AP | 需 1 材料 + 跨月乾燥)</button>
-                            <button class="btn action-btn craft-btn" data-step="twine">③ 捻線 (3 AP | 需 3 KP + 1 材料 + 跨月乾燥)</button>
-                            <button class="btn action-btn craft-btn" data-step="caulk">④ 填縫完工 (3 AP | 需 8 KP + 1 材料 + 跨月乾燥)</button>
+                            <button class="btn action-btn craft-btn" data-step="dry" title="將提取之 Avaka 纖維懸掛於戶外曬魚竿等通風且日照充足之處。依據當地季風與氣候條件，通常需持續曝曬約五日。此程序旨在促使纖維內部水分完全蒸發，引導物質之物理特性發生轉變，提高纖維之拉力強度並發揮防腐性能，以利後續長期保存與加工。">④ 脫水曝曬乾燥 (3 AP | 需 1 材料 + 跨月乾燥)</button>
+                            <button class="btn action-btn craft-btn" data-step="twine" title="纖維經充分乾燥後，依其最終之技術使用情境，採取兩種不同之加工方式：&#10;1. 編織與織布用途（panoazain）：不使用機械紡車，完全透過人工將纖維末端與前端以細緻之手結技術（umu，即績線）相銜接，延展為不間斷之連續紗線。&#10;2. 造舟與航海繩索用途（kolili／繫船繩）：操作者採用身體摩擦法（大腿搓捻法），將數股乾燥之 Avaka 纖維平鋪於大腿表面，以手掌施力快速向前、向後來回滾動，使多股纖維在摩擦力作用下緊密絞合，捻製成具高抗拉強度、耐海水腐蝕之編結繩索。">⑤ 理線捻繩 kolili (3 AP | 需 3 KP + 1 材料 + 跨月)</button>
+                            <button class="btn action-btn craft-btn" data-step="caulk" title="此工序為拼板舟建造中關鍵之結構緊固與防水工程：&#10;1. 在拼接相鄰船板時，工匠首先於榫孔內插入以小葉桑（pasek）等硬質木材製成之木釘。&#10;2. 隨後，將蘭嶼花椒（varok）根部呈棉絮狀之柔軟纖維填塞於船板接縫處。&#10;3. 接著，使用乾燥之 Avaka 纖維，以「S型」路徑交替纏繞木釘，並向下施力壓緊 varok 根部之棉絮纖維，使填縫材料在縫隙中定位並壓實。&#10;4. 當上方船板拼合且木舟下水後，內部之 varok 纖維因吸水而膨脹，發揮阻絕滲水之功能；而外部之 Avaka 則因其高抗拉強度鎖定木釘與船板接縫，提供船體橫向之結構緊固力，防止船體在海洋波浪張力下解體。">⑥ 填縫完工 Mamaruk (3 AP | 需 8 KP + 1 材料 + 跨月)</button>
                         </div>
                     </div>
 
@@ -593,7 +598,7 @@
                         <div class="players-here"></div>
                         <div class="action-grid">
                             <button class="btn action-btn move-btn">移動至此 (1 AP)</button>
-                            <button class="btn action-btn buy-btn">購買工業樹脂完工 (3 AP | 需 2 材料 + 進度 1+ + 跨月乾燥)</button>
+                            <button class="btn action-btn buy-btn">購買工業樹脂完工 (3 AP | 需 2 材料 + 進度 1+ + 跨月)</button>
                         </div>
                     </div>
                 </main>

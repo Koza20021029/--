@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --bg-gradient: linear-gradient(180deg, 
         #064e3b 0%,   /* 森林綠 */
         #022c22 25%,  /* 幽暗深林 */
@@ -2075,3 +2075,12 @@ header {
     #game .sys-logs, #game .chat-section,
     .special-actions-panel { display: none !important; }
 }
+
+@keyframes flipMonthCard { 0% { transform: perspective(800px) rotateX(90deg); opacity: 0; } 100% { transform: perspective(800px) rotateX(0deg); opacity: 1; } }
+.month-flip-anim { animation: flipMonthCard 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transform-origin: top center; }
+
+
+@keyframes eventCardFlip { 0% { transform: rotateY(90deg) scale(0.9) translateY(50px); opacity: 0; } 100% { transform: rotateY(0deg) scale(1) translateY(0); opacity: 1; } }
+.event-card-container { perspective: 1200px; }
+.event-card { animation: eventCardFlip 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transform-origin: center center;  }
+

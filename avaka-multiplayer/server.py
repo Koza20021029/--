@@ -317,105 +317,125 @@ def handle_action(data):
                 player['location'] = target
                 add_log(room_code, f"{player['name']} 移動到了 {target}")
 
-        elif action == 'gather':
-            if month == 2:
-                emit('error', {'msg': '飛魚禁令：部落灘頭已舉行招魚祭，整個月門戶關閉。為了尊重魚靈，所有男人禁止進入山林！'})
-                return
-            if player['location'] != '山林':
-                emit('error', {'msg': '必須在山林才能採集'})
-                return
-
-            cost = 3
-            if consume_ap(cost):
-                amount = 2 if month == 7 else 1
-                player['materials'] += amount
-                add_log(room_code, f"{player['name']} 採集了 {amount} 份素材")
-
         elif action == 'craft':
-            if player['location'] != '灘頭工作室':
-                emit('error', {'msg': '必須在灘頭工作室'})
-                return
-
-            if player.get('last_step_month', 0) >= month:
-                emit('error', {'msg': '傳統纖維與木材需在灘頭晾曬乾燥至少 1 個月！請等待下個月節氣成熟後再執行下一工序。'})
-                return
-
             step = data.get('step')
             cost = 3
-            if month == 3: cost -= 1
+            if month == 3: cost -= 1  # Month 3 discount applies to all steps
 
-            if step == 'peel' and player['progress'] == 0:
-                if player['materials'] < 1:
-                    emit('error', {'msg': '剝麻需要 1 份材料'})
+            # ---- Steps 1-3: Forest steps ----
+            if step in ('chop', 'rub', 'strip'):
+                if player['location'] != '山林':
+                    emit('error', {'msg': '植株砍伐、纖維軟化與撕絲工序必須在山林中執行！'})
                     return
-                if consume_ap(cost):
-                    player['materials'] -= 1
-                    player['progress'] = 1
-                    player['last_step_month'] = month
-                    add_log(room_code, f"{player['name']} 完成了 剝麻 (消耗 1 份材料)")
-
-            elif step == 'scrape' and player['progress'] == 1:
-                if player['materials'] < 1:
-                    emit('error', {'msg': '刮絲需要 1 份材料'})
-                    return
-                if consume_ap(cost):
-                    player['materials'] -= 1
-                    player['progress'] = 2
-                    player['last_step_month'] = month
-                    add_log(room_code, f"{player['name']} 完成了 刮絲 (消耗 1 份材料)")
-
-            elif step == 'twine' and player['progress'] == 2:
-                if player['materials'] < 1:
-                    emit('error', {'msg': '捻線需要 1 份材料'})
-                    return
-                if player['kp'] < 3:
-                    emit('error', {'msg': '捻線需要 3 KP'})
-                    return
-                if month == 12: cost = 0
-                if consume_ap(cost):
-                    player['materials'] -= 1
-                    player['progress'] = 3
-                    player['last_step_month'] = month
-                    add_log(room_code, f"{player['name']} 完成了 捻線 (消耗 1 份材料)")
-
-            elif step == 'caulk' and player['progress'] == 3:
-                if month == 10:
-                    emit('error', {'msg': '禁忌之月：這是專門製作貝灰的月份，不允許造屋或落成禮。即便材料已齊備，現在也絕不能動工填縫！'})
-                    return
-                if player['kp'] < 8:
-                    emit('error', {'msg': '填縫完工需要 8 KP'})
-                    return
-                if player['materials'] < 1:
-                    emit('error', {'msg': '填縫完工需要 1 份材料'})
+                if step in ('rub', 'strip') and player.get('last_step_month', 0) >= month:
+                    emit('error', {'msg': '上一工序剛完成，必須間隔至少 1 個月讓材料熟化後再繼續！'})
                     return
 
-                if player['role'] == 'elder': cost = 0
+                if step == 'chop':
+                    if month == 2:
+                        emit('error', {'msg': '飛魚禁令：部落灘頭已舉行招魚祭，整個月門戶關閉。為了尊重魚靈，所有男人禁止在山林工作！'})
+                        return
+                    if consume_ap(cost):
+                        amount = 2 if month == 7 else 1
+                        player['materials'] += amount
+                        if player['progress'] == 0:
+                            player['progress'] = 1
+                            player['last_step_month'] = month
+                            add_log(room_code, f"{player['name']} 完成了 ①砍伐剝皮 ipana'ape (獲得 {amount} 份材料)")
+                        else:
+                            add_log(room_code, f"{player['name']} 執行了砍伐剝皮，獲得了 {amount} 份材料")
 
-                if consume_ap(cost):
-                    player['materials'] -= 1
-                    player['progress'] = 4
-                    player['finished'] = True
-                    player['path_choice'] = 'traditional'
-                    player['last_step_month'] = month
+                elif step == 'rub' and player['progress'] == 1:
+                    if player['materials'] < 1:
+                        emit('error', {'msg': '懸掛摩擦軟化需要 1 份材料'})
+                        return
+                    if consume_ap(cost):
+                        player['materials'] -= 1
+                        player['progress'] = 2
+                        player['last_step_month'] = month
+                        add_log(room_code, f"{player['name']} 完成了 ②懸掛摩擦軟化 (消耗 1 份材料)")
 
-                    score = 15 + 5  # Base + guarantee
-                    if month == 6: score += 2
-                    player['score'] += score
-                    player['score_breakdown'].append(f"傳統 Avaka (+{score})")
-                    add_log(room_code, f"{player['name']} 完美傳承了造船技術！獲得 {score} 分")
+                elif step == 'strip' and player['progress'] == 2:
+                    if player['materials'] < 1:
+                        emit('error', {'msg': '劃痕撕絲需要 1 份材料'})
+                        return
+                    if consume_ap(cost):
+                        player['materials'] -= 1
+                        player['progress'] = 3
+                        player['last_step_month'] = month
+                        add_log(room_code, f"{player['name']} 完成了 ③劃痕撕絲 chingdasan (消耗 1 份材料)")
+
+            # ---- Steps 4-6: Beach Workshop steps ----
+            elif step in ('dry', 'twine', 'caulk'):
+                if player['location'] != '灘頭工作室':
+                    emit('error', {'msg': '曝曬乾燥、捻繩理線與填縫完工工序必須在灘頭工作室執行！'})
+                    return
+                if player.get('last_step_month', 0) >= month:
+                    emit('error', {'msg': '纖維需在灘頭晾曬乾燥至少 1 個月！請等待下個月節氣成熟後再執行下一工序。'})
+                    return
+
+                if step == 'dry' and player['progress'] == 3:
+                    if player['materials'] < 1:
+                        emit('error', {'msg': '曝曬乾燥需要 1 份材料'})
+                        return
+                    if consume_ap(cost):
+                        player['materials'] -= 1
+                        player['progress'] = 4
+                        player['last_step_month'] = month
+                        add_log(room_code, f"{player['name']} 完成了 ④脫水曝曬乾燥 (消耗 1 份材料)")
+
+                elif step == 'twine' and player['progress'] == 4:
+                    if player['materials'] < 1:
+                        emit('error', {'msg': '理線捻繩需要 1 份材料'})
+                        return
+                    if player['kp'] < 3:
+                        emit('error', {'msg': '理線捻繩需要 3 KP（傳統搓捻技藝）'})
+                        return
+                    if month == 12: cost = 0
+                    if consume_ap(cost):
+                        player['materials'] -= 1
+                        player['progress'] = 5
+                        player['last_step_month'] = month
+                        add_log(room_code, f"{player['name']} 完成了 ⑤理線捻繩 kolili (消耗 1 份材料)")
+
+                elif step == 'caulk' and player['progress'] == 5:
+                    if month == 10:
+                        emit('error', {'msg': '禁忌之月：這是專門製作貝灰的月份，即便材料已齊備，現在也絕不能動工填縫！'})
+                        return
+                    if player['kp'] < 8:
+                        emit('error', {'msg': '填縫完工需要 8 KP（Mamaruk / tumbek su varuk）'})
+                        return
+                    if player['materials'] < 1:
+                        emit('error', {'msg': '填縫完工需要 1 份材料'})
+                        return
+
+                    if player['role'] == 'elder': cost = 0
+
+                    if consume_ap(cost):
+                        player['materials'] -= 1
+                        player['progress'] = 6
+                        player['finished'] = True
+                        player['path_choice'] = 'traditional'
+                        player['last_step_month'] = month
+
+                        score = 15 + 5  # Base + guarantee
+                        if month == 6: score += 2
+                        player['score'] += score
+                        player['score_breakdown'].append(f"傳統 Avaka (+{score})")
+                        add_log(room_code, f"{player['name']} 完美傳承了造船技術！獲得 {score} 分")
 
         elif action == 'buy':
             if player['location'] != '商店':
                 emit('error', {'msg': '必須在商店'})
                 return
-            if player['progress'] < 1:
-                emit('error', {'msg': '必須至少完成基礎剝麻（進度 1）才能使用工業樹脂加工填縫！'})
+            if player['progress'] < 3:
+                emit('error', {'msg': '必須至少在山林完成三道工序（砍伐→軟化→撕絲），才能使用工業樹脂加工填縫！'})
                 return
             if player['materials'] < 2:
                 emit('error', {'msg': '購買工業樹脂完工需要至少 2 份材料！'})
                 return
             if player.get('last_step_month', 0) >= month:
-                emit('error', {'msg': '傳統纖維需在灘頭晾曬乾燥至少 1 個月才能進行樹脂加工！'})
+                emit('error', {'msg': '傳統纖維需先完成山林三道工序，晾曬至少 1 個月才能進行樹脂加工！'})
                 return
 
             cost = 4 if month == 9 else 3
@@ -423,7 +443,7 @@ def handle_action(data):
                 player['materials'] -= 2
                 player['industrial'] = True
                 player['path_choice'] = 'industrial'
-                player['progress'] = 4
+                player['progress'] = 6
                 player['finished'] = True
                 player['last_step_month'] = month
 

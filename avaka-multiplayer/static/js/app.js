@@ -346,7 +346,7 @@ const translations = {
             chatSendBtn: '傳送',
             leaveGameBtn: '退出遊戲',
             leaveConfirm: '確定要退出遊戲嗎？',
-            steps: ['尚未開始', '已剝麻', '已刮絲', '已捻線', '✅ 已完工'],
+            steps: ['尚未開始', '①已砍伐剝皮', '②已摩擦軟化', '③已撕絲剝離', '④已曝曬乾燥', '⑤已理線捻繩', '✅ ⑥已填縫完工'],
             meTag: '你',
             giveBtn: '🎁 贈材料 (-1 AP)',
             ap: 'AP:',
@@ -364,20 +364,23 @@ const translations = {
                 '山林': {
                     name: '🌲 山林',
                     badge: '資源區',
-                    desc: '採集 Avaka與蘭嶼花椒的區域',
+                    desc: '採集 Avaka 假莖與蘭嶼花椒的區域（前三道工序在此執行）',
                     moveBtn: '移動至此 (1 AP)',
-                    actionBtn: '採集資源 (3 AP)'
+                    steps: {
+                        chop: "① 砍伐剝皮 ipana'ape (3 AP | 產出材料)",
+                        rub: '② 懸掛摩擦軟化 (3 AP | 需 1 材料 + 跨月)',
+                        strip: '③ 劃痕撕絲 chingdasan (3 AP | 需 1 材料 + 跨月)'
+                    }
                 },
                 '灘頭工作室': {
                     name: '🛖 灘頭工作室',
                     badge: '工藝核心',
-                    desc: '造船工序的執行區域，充滿傳統智慧與汗水',
+                    desc: '纖維加工與最終造船工序的執行區域（後三道工序在此執行）',
                     moveBtn: '移動至此 (1 AP)',
                     steps: {
-                        peel: '① 剝麻 (3 AP | 需 1 材料)',
-                        scrape: '② 刮絲 (3 AP | 需 1 材料 + 跨月乾燥)',
-                        twine: '③ 捻線 (3 AP | 需 3 KP + 1 材料 + 跨月乾燥)',
-                        caulk: '④ 填縫完工 (3 AP | 需 8 KP + 1 材料 + 跨月乾燥)'
+                        dry: '④ 脫水曝曬乾燥 (3 AP | 需 1 材料)',
+                        twine: '⑤ 理線捻繩 kolili (3 AP | 需 3 KP + 1 材料 + 跨月乾燥)',
+                        caulk: '⑥ 填縫完工 Mamaruk (3 AP | 需 8 KP + 1 材料 + 跨月乾燥)'
                     }
                 },
                 '商店': {
@@ -385,7 +388,7 @@ const translations = {
                     badge: '工業區',
                     desc: '購買快速但會造成文化斷裂的工業材料',
                     moveBtn: '移動至此 (1 AP)',
-                    buyBtn: '購買工業樹脂完工 (3 AP | 需 2 材料 + 進度 1+ + 跨月乾燥)'
+                    buyBtn: '購買工業樹脂完工 (3 AP | 需 2 材料 + 山林前三道工序 + 跨月乾燥)'
                 }
             }
         },
@@ -396,12 +399,12 @@ const translations = {
                 
                 <h3>🎯 核心點數、體力與團隊傳承機制</h3>
                 <ul>
-                    <li><strong>⚡ 行動點數 (AP) 與月度恢復：</strong> 執行採集(3 AP)、工序(3 AP)、請益(3 AP)、指導(2 AP)、轉譯(2 AP)、移動(1 AP, 青年/1月 0 AP)或贈送材料(1 AP)皆需消耗 AP。每個月初進行體力恢復（青年 +4 AP、中生代/耆老 +3 AP）。</li>
+                    <li><strong>⚡ 行動點數 (AP) 與月度恢復：</strong> 執行採集(3 AP)、山林工序①②③(3 AP)、灘頭工序④⑤(3 AP)、填縫完工⑥(0-3 AP)、請益(3 AP)、指導(2 AP)、移動(1 AP, 青年/1月 0 AP)或贈送材料(1 AP)皆需消耗 AP。每個月初進行體力恢復（青年 +4 AP、中生代/耆老 +3 AP）。</li>
                     <li><strong>🤝 團隊合作與傳承得分：</strong> 青年向長輩「請益 (3 AP)」，青年獲得 +3 KP 且<b>雙方各得 +1 分傳承分數</b>；耆老「遠程指導 (2 AP)」為學徒 +1 KP 且<b>獲得 +1 分</b>；「贈與材料 (1 AP)」可跨角色補充物資。</li>
                     <li><strong>🔬 科學轉譯 (判定與得分)：</strong> 消耗 2 AP 與 2 KP。依據現有 KP 判定成功率（成功率 = 50% + KP×5%，中生代額外 +20%）；<b>第 8 個月 (Pitanatana 土器月) 100% 必定成功！</b> 成功將獲得 <b>+4 分文化韌性得分</b> 與 <b>2 份材料</b>獎勵！</li>
-                    <li><strong>⏳ 跨月乾燥等待期：</strong> 傳統木材與 Avaka 纖維需在灘頭晾曬乾燥。每完成一項工序後，必須進入<b>下一個月份</b>才能執行下一工序（至少需 4+ 個月才能完工）。</li>
-                    <li><strong>🌿 材料需求與團隊分工：</strong> 造船 4 工序各需消耗 <b>1 份材料</b>（全船共需 4 份材料）。青年移動力快，應積極採集並「贈與材料」給長輩；耆老則需透過指導協助傳承。</li>
-                    <li><strong>💡 技術點數 (KP)：</strong> 代表對傳統工藝的知識。累積足夠 KP 才能執行進階工序（捻線需 3 KP，填縫完工需 8 KP）。</li>
+                    <li><strong>⏳ 跨月等待期：</strong> 每完成山林或灘頭的一項工序後，必須進入<b>下一個月份</b>才能執行下一工序（至少需 6+ 個月才能完工）。</li>
+                    <li><strong>🌿 材料需求與團隊分工：</strong> 造船六道工序各需消耗 <b>1 份材料</b>（全船共需 <b>6 份材料</b>）。青年移動力快，應積極採集並「贈與材料」給長輩；耆老則需透過指導協助傳承。</li>
+                    <li><strong>💡 技術點數 (KP)：</strong> 代表對傳統工藝的知識。累積足夠 KP 才能執行進階工序（理線捻繩需 3 KP，填縫完工需 8 KP）。</li>
                     <li><strong>📅 曆法禁忌：</strong> 依循蘭嶼 12 個月曆法（如 2 月飛魚祭封山禁採集、10 月禁忌之月禁完工）。</li>
                 </ul>
 
@@ -412,33 +415,35 @@ const translations = {
                     <li><strong>⚖️ 協商者 (中年工匠)：</strong> Max AP 5 (每月恢復 +3)，開局 5 KP。擔任傳統與現代橋樑，若購買工業材料完工可獲得加分且免除扣分；溝通無礙，向耆老「請益 (1 AP)」可獲得 1 KP，也能接受遠程指導。</li>
                 </ul>
 
-                <h3>🗺️ 造船路徑流程圖</h3>
+                <h3>🗺️ 造船六階段流程圖</h3>
                 <div class="css-flowchart">
-                    <div class="fc-node fc-start">開始造船 (需要 4 份材料 + 跨月乾燥)</div>
-                    
+                    <div class="fc-node fc-start">開始造船 (需要 6 份材料 + 跨月等待)</div>
                     <div class="fc-branches">
                         <div class="fc-branch traditional">
                             <div class="fc-label">🌟 傳統路線 (高分 / 完美傳承)</div>
-                            <div class="fc-node">前往 🌲 山林 (採集 3 AP)</div>
-                            <div class="fc-arrow">↓</div>
-                            <div class="fc-node">前往 🛖 灘頭 (① 剝麻 3 AP | 需 1 材料)</div>
-                            <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
-                            <div class="fc-node">② 刮絲 (3 AP | 需 1 材料)</div>
-                            <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
-                            <div class="fc-node">③ 捻線 (3 AP | 需 3 KP + 1 材料)</div>
-                            <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
-                            <div class="fc-node">④ 填縫完工 (3 AP | 需 8 KP + 1 材料)</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;padding:0.3rem;text-align:center">📍 山林階段 (前三步)</div>
+                            <div class="fc-node">① 砍伐剝皮 ipana'ape (3 AP | 1 材料)</div>
+                            <div class="fc-arrow">↓ 跨月</div>
+                            <div class="fc-node">② 懸掛摩擦軟化 (3 AP | 1 材料)</div>
+                            <div class="fc-arrow">↓ 跨月</div>
+                            <div class="fc-node">③ 劃痕撕絲 chingdasan (3 AP | 1 材料)</div>
+                            <div class="fc-arrow">↓ 跨月 → 移動到灘頭工作室</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;padding:0.3rem;text-align:center">📍 灘頭工作室階段 (後三步)</div>
+                            <div class="fc-node">④ 脫水曝曬乾燥 (3 AP | 1 材料)</div>
+                            <div class="fc-arrow">↓ 跨月</div>
+                            <div class="fc-node">⑤ 理線捻繩 kolili (3 AP | 3 KP + 1 材料)</div>
+                            <div class="fc-arrow">↓ 跨月</div>
+                            <div class="fc-node">⑥ 填縫完工 Mamaruk (3 AP | 8 KP + 1 材料)</div>
                             <div class="fc-arrow">↓</div>
                             <div class="fc-node fc-win">傳承成功！</div>
                         </div>
-                        
                         <div class="fc-branch modern">
                             <div class="fc-label">⚠️ 現代化路線 (低分 / 文化斷裂)</div>
-                            <div class="fc-node">完成 ① 剝麻</div>
-                            <div class="fc-arrow">↓ 晾曬乾燥 1 個月</div>
+                            <div class="fc-node">完成山林 ①②③ 三道工序</div>
+                            <div class="fc-arrow">↓ 跨月乾燥</div>
                             <div class="fc-node">前往 🏬 商店</div>
                             <div class="fc-arrow">↓</div>
-                            <div class="fc-node">購買樹脂完工 (3 AP | 需 2 材料)</div>
+                            <div class="fc-node">購買樹脂完工 (3 AP | 2 材料)</div>
                             <div class="fc-arrow">↓</div>
                             <div class="fc-node fc-lose">完工，但去技能化</div>
                         </div>
@@ -595,7 +600,7 @@ const translations = {
             chatSendBtn: 'Send',
             leaveGameBtn: 'Leave Game',
             leaveConfirm: 'Are you sure you want to leave the game?',
-            steps: ['Not Started', 'Peeled', 'Scraped', 'Twined', '✅ Finished'],
+            steps: ['Not Started', '① Chopped & Stripped', '② Rubbed & Softened', '③ Split & Stripped', '④ Dried', '⑤ Twined & Knotted', '✅ ⑥ Caulked & Finished'],
             meTag: 'You',
             giveBtn: '🎁 Give Mat (-1 AP)',
             ap: 'AP:',
@@ -613,20 +618,23 @@ const translations = {
                 '山林': {
                     name: '🌲 Mountain Forest',
                     badge: 'Resources',
-                    desc: 'Gather Avaka and Lanyu prickly ash',
+                    desc: 'Gather Avaka stems & Lanyu prickly ash (Steps 1-3 performed here)',
                     moveBtn: 'Move here (1 AP)',
-                    actionBtn: 'Gather (3 AP)'
+                    steps: {
+                        chop: "① Chop & Peel Stem ipana'ape (3 AP | Yields Mat)",
+                        rub: '② Hang & Rub Soften (3 AP | 1 Mat + Cross-month)',
+                        strip: '③ Score & Strip Fiber chingdasan (3 AP | 1 Mat + Cross-month)'
+                    }
                 },
                 '灘頭工作室': {
                     name: '🛖 Beach Workshop',
                     badge: 'Craft Core',
-                    desc: 'Ship building workspace, filled with traditional wisdom and sweat',
+                    desc: 'Fiber processing and final shipbuilding steps (Steps 4-6 performed here)',
                     moveBtn: 'Move here (1 AP)',
                     steps: {
-                        peel: '① Peel Hemp (3 AP | 1 Mat)',
-                        scrape: '② Scrape Fiber (3 AP | 1 Mat + Curing)',
-                        twine: '③ Twine Rope (3 AP | 3 KP + 1 Mat + Curing)',
-                        caulk: '④ Caulk & Finish (3 AP | 8 KP + 1 Mat + Curing)'
+                        dry: '④ Dry & Dewater (3 AP | 1 Mat + Curing)',
+                        twine: '⑤ Twine Rope kolili (3 AP | 3 KP + 1 Mat + Cross-month)',
+                        caulk: '⑥ Caulk & Finish Mamaruk (3 AP | 8 KP + 1 Mat + Cross-month)'
                     }
                 },
                 '商店': {
@@ -634,7 +642,7 @@ const translations = {
                     badge: 'Industrial',
                     desc: 'Buy fast but culturally disruptive industrial resin',
                     moveBtn: 'Move here (1 AP)',
-                    buyBtn: 'Buy resin & finish (3 AP | 2 Mats + Progress 1+ + Curing)'
+                    buyBtn: 'Buy resin & finish (3 AP | 2 Mats + Forest Steps 1-3 + Cross-month)'
                 }
             }
         },
@@ -645,12 +653,12 @@ const translations = {
                 
                 <h3>🎯 Core AP, Stamina & Heritage Scoring</h3>
                 <ul>
-                    <li><strong>⚡ Action Points (AP) & Monthly Recovery:</strong> Actions cost AP: Gather (3 AP), Craft (3 AP), Ask Elder (3 AP), Remote Guide (2 AP), Move (1 AP; Youth/Month 1: 0 AP), Give Material (1 AP). Each month recovers stamina (Youth +4 AP, Middle/Elder +3 AP) rather than resetting to max.</li>
-                    <li><strong>🤝 Teamwork & Heritage Scoring:</strong> Asking the Elder (3 AP) grants the Youth +3 KP and <b>+1 heritage point to both players</b>; Remote Guiding (2 AP) grants the apprentice +1 KP and <b>+1 heritage point to the Elder</b>; Gifting Materials (1 AP) transfers resources.</li>
-                    <li><strong>🔬 Scientific Translation:</strong> Costs 2 AP & 2 KP. Success rate = 50% + KP×5% (Middle role +20%); <b>Month 8 (Pitanatana) is 100% guaranteed success!</b> Success grants <b>+4 points</b> and <b>2 materials</b>!</li>
-                    <li><strong>⏳ Cross-Month Drying Cooldown:</strong> Traditional timber and Avaka fiber must cure & dry on the beach. After completing any step, at least <b>1 month must pass</b> before performing the next step (takes 4+ months minimum).</li>
-                    <li><strong>🌿 Material Requirements & Teamwork:</strong> Each of the 4 craft steps consumes <b>1 material</b> (4 materials total for full boat). The Youth moves fast and should gather & gift materials to Elders; Elders guide apprentices to pass down knowledge.</li>
-                    <li><strong>💡 Knowledge Points (KP):</strong> Represents traditional craft knowledge. Required for advanced steps (3 KP for twining, 8 KP for caulking).</li>
+                    <li><strong>⚡ Action Points (AP) &amp; Monthly Recovery:</strong> Actions cost AP: Forest Steps ①②③ (3 AP), Beach Steps ④⑤ (3 AP), Caulk ⑥ (0-3 AP), Ask Elder (3 AP), Remote Guide (2 AP), Move (1 AP; Youth/Month 1: 0 AP), Give Material (1 AP). Each month recovers stamina (Youth +4 AP, Middle/Elder +3 AP).</li>
+                    <li><strong>🤝 Teamwork &amp; Heritage Scoring:</strong> Asking the Elder (3 AP) grants the Youth +3 KP and <b>+1 heritage point to both players</b>; Remote Guiding (2 AP) grants the apprentice +1 KP and <b>+1 heritage point to the Elder</b>; Gifting Materials (1 AP) transfers resources.</li>
+                    <li><strong>🔬 Scientific Translation:</strong> Costs 2 AP &amp; 2 KP. Success rate = 50% + KP×5% (Middle role +20%); <b>Month 8 (Pitanatana) is 100% guaranteed!</b> Success grants <b>+4 points</b> and <b>2 materials</b>!</li>
+                    <li><strong>⏳ Cross-Month Cooldown:</strong> After each step (forest or beach), at least <b>1 month must pass</b> before the next step (takes <b>6+ months minimum</b>).</li>
+                    <li><strong>🌿 Material Requirements:</strong> Each of the 6 craft steps consumes <b>1 material</b> (<b>6 materials total</b> for a full boat). Youth moves fast and should gather &amp; gift materials; Elders guide apprentices.</li>
+                    <li><strong>💡 Knowledge Points (KP):</strong> Required for advanced steps (3 KP for twining kolili, 8 KP for caulking Mamaruk).</li>
                     <li><strong>📅 Calendar Taboos:</strong> Follows Lanyu's 12-month calendar (e.g. Month 2 bans forest access, Month 10 bans caulking).</li>
                 </ul>
 
@@ -767,7 +775,8 @@ function translateLog(logText) {
         { regex: /(.+) 離開了房間/, replace: '$1 left the room' },
         { regex: /遊戲開始！第 1 個月：Kashyman/, replace: 'Game started! Month 1: Kashyman' },
         { regex: /(.+) 移動到了 (.+)/, replace: '$1 moved to $2' },
-        { regex: /(.+) 採集了 (\d+) 份素材/, replace: '$1 gathered $2 material(s)' },
+        { regex: /(.+) 執行了砍伐剝皮，獲得了 (\d+) 份材料/, replace: '$1 performed chop & peel, yielding $2 material(s)' },
+        { regex: /(.+) 完成了 ①砍伐剝皮 ipana'ape \(獲得 (\d+) 份材料\)/, replace: '$1 completed ① Chop & Peel ipana\'ape (yielding $2 material(s))' },
         { regex: /(.+) 完成了 剝麻/, replace: '$1 completed peeling hemp' },
         { regex: /(.+) 完成了 刮絲/, replace: '$1 completed scraping fiber' },
         { regex: /(.+) 完成了 捻線/, replace: '$1 completed twining rope' },
@@ -1051,18 +1060,23 @@ function applyLanguage() {
         if (locKey === '山林') {
             const gatherBtn = card.querySelector('.gather-btn');
             if (gatherBtn) gatherBtn.textContent = locData.actionBtn;
+            if (locData.steps) {
+                const chopBtn = card.querySelector('.craft-btn[data-step="chop"]');
+                if (chopBtn && locData.steps.chop) chopBtn.textContent = locData.steps.chop;
+                const rubBtn = card.querySelector('.craft-btn[data-step="rub"]');
+                if (rubBtn && locData.steps.rub) rubBtn.textContent = locData.steps.rub;
+                const stripBtn = card.querySelector('.craft-btn[data-step="strip"]');
+                if (stripBtn && locData.steps.strip) stripBtn.textContent = locData.steps.strip;
+            }
         } else if (locKey === '灘頭工作室') {
-            const peelBtn = card.querySelector('.craft-btn[data-step="peel"]');
-            if (peelBtn) peelBtn.textContent = locData.steps.peel;
-            
-            const scrapeBtn = card.querySelector('.craft-btn[data-step="scrape"]');
-            if (scrapeBtn) scrapeBtn.textContent = locData.steps.scrape;
-            
-            const twineBtn = card.querySelector('.craft-btn[data-step="twine"]');
-            if (twineBtn) twineBtn.textContent = locData.steps.twine;
-            
-            const caulkBtn = card.querySelector('.craft-btn[data-step="caulk"]');
-            if (caulkBtn) caulkBtn.textContent = locData.steps.caulk;
+            if (locData.steps) {
+                const dryBtn = card.querySelector('.craft-btn[data-step="dry"]');
+                if (dryBtn && locData.steps.dry) dryBtn.textContent = locData.steps.dry;
+                const twineBtn = card.querySelector('.craft-btn[data-step="twine"]');
+                if (twineBtn && locData.steps.twine) twineBtn.textContent = locData.steps.twine;
+                const caulkBtn = card.querySelector('.craft-btn[data-step="caulk"]');
+                if (caulkBtn && locData.steps.caulk) caulkBtn.textContent = locData.steps.caulk;
+            }
         } else if (locKey === '商店') {
             const buyBtn = card.querySelector('.buy-btn');
             if (buyBtn) buyBtn.textContent = locData.buyBtn;
@@ -1265,7 +1279,7 @@ function showMonthEventModal(month) {
     if (!rule) return;
     
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay active';
+    modal.className = 'modal-overlay active event-card-container';
     modal.style.zIndex = '3000';
     
     const isEn = currentLang === 'en';
@@ -1277,9 +1291,25 @@ function showMonthEventModal(month) {
         : (isEn ? `【Monthly Rule】\n${rule.desc_en}` : `【本月規則】\n${rule.desc_zh}`);
     
     let html = `
-        <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem; text-align: left; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
-            <h2 style="color:var(--secondary); font-size: 1.8rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem;">${title}</h2>
-            <div style="display:flex; flex-direction:column; gap: 1rem; margin-bottom: 2rem;">
+        <div class="modal-content event-card" style="position: relative; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; padding: 12px; text-align: left; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9), 0 0 20px rgba(197,160,89,0.25); border: 2px solid #C5A059; border-radius: 2px; background: repeating-linear-gradient(45deg, rgba(197,160,89,0.035) 0px, rgba(197,160,89,0.035) 1px, transparent 1px, transparent 5px), repeating-linear-gradient(-45deg, rgba(197,160,89,0.035) 0px, rgba(197,160,89,0.035) 1px, transparent 1px, transparent 5px), linear-gradient(135deg, rgba(16,20,28,0.98), rgba(10,12,16,0.95)); ">
+            
+            <!-- Baroque Top Center Ornament -->
+            <div style="position:absolute; top: -16px; left: 50%; transform: translateX(-50%); color: #C5A059; font-size: 1.8rem; background: #11151c; padding: 0 15px; text-shadow: 0 0 15px rgba(197,160,89,0.8); z-index: 10;">⚜</div>
+            
+            <div style="position: relative; border: 1px solid rgba(197,160,89,0.4); display: flex; flex-direction: column; overflow: hidden; flex: 1;">
+                
+                <!-- Baroque Corner Ornaments (Scalloped cutouts with stars) -->
+                <div style="position:absolute; top: -1px; left: -1px; color: #C5A059; font-size: 0.9rem; background: #11151c; width: 22px; height: 22px; display:flex; align-items:center; justify-content:center; border-right: 1px solid rgba(197,160,89,0.4); border-bottom: 1px solid rgba(197,160,89,0.4); border-bottom-right-radius: 12px; z-index: 5;">✦</div>
+                <div style="position:absolute; top: -1px; right: -1px; color: #C5A059; font-size: 0.9rem; background: #11151c; width: 22px; height: 22px; display:flex; align-items:center; justify-content:center; border-left: 1px solid rgba(197,160,89,0.4); border-bottom: 1px solid rgba(197,160,89,0.4); border-bottom-left-radius: 12px; z-index: 5;">✦</div>
+                <div style="position:absolute; bottom: -1px; left: -1px; color: #C5A059; font-size: 0.9rem; background: #11151c; width: 22px; height: 22px; display:flex; align-items:center; justify-content:center; border-right: 1px solid rgba(197,160,89,0.4); border-top: 1px solid rgba(197,160,89,0.4); border-top-right-radius: 12px; z-index: 5;">✦</div>
+                <div style="position:absolute; bottom: -1px; right: -1px; color: #C5A059; font-size: 0.9rem; background: #11151c; width: 22px; height: 22px; display:flex; align-items:center; justify-content:center; border-left: 1px solid rgba(197,160,89,0.4); border-top: 1px solid rgba(197,160,89,0.4); border-top-left-radius: 12px; z-index: 5;">✦</div>
+                
+                <div style="padding: 1.8rem 2.2rem; background-image: radial-gradient(circle at top right, rgba(197,160,89,0.1), transparent 45%); overflow-y: auto; flex: 1; position: relative; z-index: 1;" class="custom-scrollbar">
+                    <div style="display:flex; justify-content: space-between; align-items:flex-start; border-bottom: 1px dashed rgba(197,160,89,0.3); padding-bottom: 1rem; margin-bottom: 1.2rem;">
+                    <h2 style="color:var(--secondary); font-size: 1.7rem; margin: 0; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(212,175,55,0.3);">${title}</h2>
+                    <span style="background: rgba(212,175,55,0.15); color: var(--secondary); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: bold; border: 1px solid rgba(212,175,55,0.4); text-transform: uppercase; letter-spacing: 2px; flex-shrink: 0; margin-left: 1rem;">EVENT</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap: 0.8rem; margin-bottom: 1.2rem;">
     `;
     
     if (ev) {
@@ -1294,9 +1324,9 @@ function showMonthEventModal(month) {
                     else color = '#03A9F4';
                 }
                 html += `
-                    <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border-left: 4px solid ${color};">
-                        <strong style="color: ${color}; display: block; margin-bottom: 0.3rem;">${d.role}</strong>
-                        <span style="line-height: 1.6;">${d.text}</span>
+                    <div style="background: rgba(0,0,0,0.4); padding: 1rem 1.2rem; border-radius: 8px; border-left: 3px solid ${color}; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <strong style="color: ${color}; display: block; margin-bottom: 0.3rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;">${d.role}</strong>
+                        <span style="line-height: 1.6; color: #f8fafc; font-size: 1.05rem;">${d.text}</span>
                     </div>
                 `;
             });
@@ -1304,13 +1334,17 @@ function showMonthEventModal(month) {
     }
     
     const btnText = isEn ? 'I Understand' : '我明白了';
+    const ruleLabel = isEn ? 'Rule Update' : '規則更新';
     
     html += `
+                </div>
+                <div style="background: rgba(244, 67, 54, 0.05); border-left: 4px solid var(--danger); padding: 1.2rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem; box-shadow: inset 0 0 20px rgba(244,67,54,0.02);">
+                    <h4 style="color: rgba(244, 67, 54, 0.8); margin: 0 0 0.6rem 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px;">${ruleLabel}</h4>
+                    <p style="color: #f1f5f9; font-size: 0.95rem; line-height: 1.6; white-space: pre-line; margin: 0;">${desc}</p>
+                </div>
+                <button class="btn primary glow-btn" style="width: 100%; padding: 1rem; font-size: 1.1rem; letter-spacing: 2px; border-radius: 8px; transition: all 0.3s; text-transform: uppercase; margin-top: auto;" onclick="this.closest('.modal-overlay').remove()">${btnText}</button>
+                </div>
             </div>
-            <div style="background: rgba(244, 67, 54, 0.1); border: 1px solid var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
-                <p style="color: #ffcdd2; font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">${desc}</p>
-            </div>
-            <button class="btn primary glow-btn" style="width: 100%;" onclick="this.closest('.modal-overlay').remove()">${btnText}</button>
         </div>
     `;
     modal.innerHTML = html;
@@ -1931,11 +1965,7 @@ document.querySelectorAll('.move-btn').forEach(btn => {
     });
 });
 
-document.querySelector('.gather-btn').addEventListener('click', (e) => {
-    playActionSound();
-    showFloatingIcon(e, '🌿');
-    sendAction({ type: 'gather' });
-});
+
 
 document.querySelectorAll('.craft-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -2098,9 +2128,20 @@ function updateBackgroundForMonth(month) {
     }
 }
 
+let lastRenderedMonth = null;
 function renderGame(state) {
     document.querySelector('.bg-layer').classList.remove('lobby-anim'); // Stop lobby animation
     
+    if (lastRenderedMonth !== state.month) {
+        lastRenderedMonth = state.month;
+        const monthInfoEl = document.querySelector('.month-info');
+        if (monthInfoEl) {
+            monthInfoEl.classList.remove('month-flip-anim');
+            void monthInfoEl.offsetWidth; // trigger reflow
+            monthInfoEl.classList.add('month-flip-anim');
+        }
+    }
+
     const isEn = currentLang === 'en';
     const monthBadgeHtml = isEn ? `Month <span id="current-month">${state.month}</span>` : `第 <span id="current-month">${state.month}</span> 個月`;
     document.getElementById('month-badge').innerHTML = monthBadgeHtml;
