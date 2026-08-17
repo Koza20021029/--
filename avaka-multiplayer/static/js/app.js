@@ -1694,6 +1694,7 @@ socket.on('connect', () => {
 
 socket.on('error', (err) => {
     showToast(err.msg);
+    if (gameScreen.classList.contains('active')) return;
     // Ensure we go back to the login screen if an error occurs (e.g. wrong room code)
     avatarScreen.classList.remove('active');
     gameScreen.classList.remove('active');
@@ -2188,8 +2189,12 @@ function renderGame(state) {
         pEl.innerHTML = `
             <div class="pc-behind"></div>
             <div class="pc-card-shell">
+                <!-- JRPG Pixel Art Progress Icon (Moved outside card to prevent clipping) -->
+                <div class="px-icon-container" style="--c: ${roleColor};">
+                    <div class="px-icon px-state-${p.progress || 0}"></div>
+                </div>
                 <section class="pc-card" style="${isMe ? 'border-color: ' + roleColor + '66; box-shadow: 0 0 15px ' + roleColor + '33;' : ''}">
-                    <div class="pc-inside" style="padding: 1.1rem 1rem;">
+                    <div class="pc-inside" style="padding: 1.1rem 1rem; position: relative;">
                         <div class="pc-shine"></div>
                         <div class="pc-glare"></div>
                         <div class="pc-content">
@@ -2202,19 +2207,23 @@ function renderGame(state) {
                                             : `<span style="font-size:1.5rem; line-height:1;">${p.avatar ? p.avatar.icon : ''}</span>`}
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 1px;">
-                                        ${isMe ? `
-                                        <span class="player-name player-avatar-trigger"
-                                            title="${isEn ? 'Click to preview your character' : '點擊預覽你的角色'}"
-                                            data-player-name="${p.name}"
-                                            data-player-role="${p.role}"
-                                            style="cursor:pointer; text-decoration:underline dotted rgba(255,255,255,0.4); text-underline-offset:3px; font-weight: 800; font-size: 1.15rem; color: #fff; line-height: 1.2;"
-                                        >${p.name} <span style="font-size:0.65rem;opacity:0.65;">👁</span></span>
-                                        ` : `<span class="player-name" style="font-weight: 800; font-size: 1.15rem; color: #fff; line-height: 1.2;">${p.name}</span>`}
+                                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                            ${isMe ? `
+                                            <span class="player-name player-avatar-trigger"
+                                                title="${isEn ? 'Click to preview your character' : '點擊預覽你的角色'}"
+                                                data-player-name="${p.name}"
+                                                data-player-role="${p.role}"
+                                                style="cursor:pointer; text-decoration:underline dotted rgba(255,255,255,0.4); text-underline-offset:3px; font-weight: 800; font-size: 1.15rem; color: #fff; line-height: 1.2;"
+                                            >${p.name} <span style="font-size:0.65rem;opacity:0.65;">👁</span></span>
+                                            ` : `<span class="player-name" style="font-weight: 800; font-size: 1.15rem; color: #fff; line-height: 1.2;">${p.name}</span>`}
+                                            
+                                            <!-- Moved player status icon (hourglass/checkmark) here, next to the name -->
+                                            <div class="player-status-icon" style="font-size: 1.0rem; flex-shrink: 0;">
+                                                ${p.ready ? `<span title="${isEn ? 'Ready' : '已準備'}" class="ready-icon">✅</span>` : `<span title="${isEn ? 'Thinking' : '思考中'}" class="thinking-icon" style="opacity:0.6;">⏳</span>`}
+                                            </div>
+                                        </div>
                                         ${isMe ? `<span class="tag is-me" style="width: fit-content; padding: 0.05rem 0.35rem; font-size: 0.65rem; margin-top: 1px; display: inline-block;">${translations[currentLang].game.meTag}</span>` : ''}
                                     </div>
-                                </div>
-                                <div class="player-status-icon" style="font-size: 1.1rem; flex-shrink: 0;">
-                                    ${p.ready ? `<span title="${isEn ? 'Ready' : '已準備'}" class="ready-icon">✅</span>` : `<span title="${isEn ? 'Thinking' : '思考中'}" class="thinking-icon" style="opacity:0.6;">⏳</span>`}
                                 </div>
                             </div>
 
