@@ -77,7 +77,7 @@ MONTH_RULES = [
     {"month": 2, "name": "Kapowan", "desc": "飛魚禁令：禁止進入山林（會被強制退回灘頭），無法執行採集動作。"},
     {"month": 3, "name": "Pikaokaod", "desc": "捕撈飛魚盛期：在灘頭工作室執行「剝麻」與「搓繩」動作，AP 消耗減少 1 點。"},
     {"month": 4, "name": "Papataw", "desc": "男人勤於出海：青年向長老「請益」的消耗增至 4 AP（原為 3），協商者增至 2 AP（原為 1）。"},
-    {"month": 5, "name": "Pipilapila", "desc": "梅雨季節：回合開始時，若持有材料需自動扣除 1 AP 防潮；若 AP 不足，材料將腐爛歸零。"},
+    {"month": 5, "name": "Pipilapila", "desc": "梅雨季節：回合開始時，若持有材料且「未完成工序④乾燥」，需扣除 1 AP 防潮；否則材料腐爛歸零。"},
     {"month": 6, "name": "Apiya vehan", "desc": "好月節：執行最終「填縫」動作（完成造船）時，總分額外加 2 分。"},
     {"month": 7, "name": "Pehhakow", "desc": "解禁重啟：山林解禁，執行「採集」動作（消耗 3 AP）可獲得 2 份材料（原為 1 份）。"},
     {"month": 8, "name": "Pitanatana", "desc": "土器月：購買工業材料後執行「科技轉譯」時必定成功，無須進行機率檢定。"},
@@ -579,13 +579,15 @@ def handle_toggle_ready():
                             
                 if state['month'] == 5:
                     for p in state['players'].values():
-                        if p['materials'] > 0:
+                        if p['materials'] > 0 and p.get('progress', 0) < 4:
                             if p['ap'] >= 1:
                                 p['ap'] -= 1
-                                add_log(room_code, f"梅雨腐蝕：{p['name']} 消耗 1 AP 保護灘頭的材料免於腐爛。")
+                                add_log(room_code, f"🌧️ 梅雨腐蝕：{p['name']} 消耗 1 AP 保護灘頭的材料免於腐爛。")
                             else:
                                 p['materials'] = 0
-                                add_log(room_code, f"梅雨腐蝕：{p['name']} 未及時保護，曝曬中的材料腐爛歸零了！")
+                                add_log(room_code, f"🌧️ 梅雨腐蝕：{p['name']} 未及時保護，曝曬中的材料腐爛歸零了！")
+                        elif p['materials'] > 0 and p.get('progress', 0) >= 4:
+                            add_log(room_code, f"🛡️ 梅雨腐蝕：{p['name']} 的材料已完成脫水乾燥，安然度過梅雨！")
 
                 if state['month'] == 11:
                     by_loc = {}

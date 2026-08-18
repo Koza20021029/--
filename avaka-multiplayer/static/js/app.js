@@ -1225,8 +1225,8 @@ const scriptEvents = {
             { role: "System", text: "Clouds gather. A sudden downpour puts your drying Avaka fiber at risk of rotting." },
             { role: "Elder", text: "Child, building a boat is not just about the hemp on the ground, but the clouds in the sky. Hurry, pack it up!" }
         ],
-        desc_zh: "【梅雨季節】為了保護放在灘頭的材料，擁有材料的玩家將在本月被自動扣除 1 AP 作為維護費。若 AP 不足，材料將會受潮損壞歸零！",
-        desc_en: "【Plum Rain Season】To protect materials, players with stockpiled fibers will lose 1 AP for maintenance. If AP is insufficient, materials will rot to zero!"
+        desc_zh: "【梅雨季節】為了保護放在灘頭的材料，擁有材料且「未完成工序④乾燥」的玩家將被自動扣除 1 AP 作為維護費。若已完成乾燥則不受梅雨影響！若未完成且 AP 不足，材料將受潮損壞歸零！",
+        desc_en: "【Plum Rain Season】To protect materials, players with stockpiled fibers who haven't finished step 4 (Drying) will lose 1 AP for maintenance. If dried, it's safe! If AP is insufficient, wet materials will rot to zero!"
     },
     10: {
         title_zh: "【禁忌之月】心理韌性的考驗",
