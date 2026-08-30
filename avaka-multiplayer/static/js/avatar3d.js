@@ -540,7 +540,7 @@ function buildBody(sk) {
 
 function buildAccessory(fw, fh, fd) {
     const acc = avatarState.accessory;
-    if (acc==='none') return;
+    if (acc === 'none' && avatarState.cloth !== 'rattan_armor') return;
 
     if (acc === 'rattan_helmet') {
         currentGroup = headGroup; // Attach helmet to scaled head group so it sways naturally with head rotation
@@ -615,11 +615,11 @@ function buildAccessory(fw, fh, fd) {
     if (acc === 'rattan_armor' || avatarState.cloth === 'rattan_armor') {
         currentGroup = null; // Ensure attached to body/avatarGroup
         // 博物館展示級達悟族傳統籐甲 (Museum-Grade Tao Authentic Rattan Armor)
-        const leatherBacking = mat('#1C1714', 0.92, 0.00); // Authentic Buffalo Leather Backing (水牛皮底襯)
-        const rattanRod      = mat('#44372D', 0.80, 0.02); // Aged Vertical Rattan Spar Rods (直向省藤棒條)
-        const rattanBundle   = mat('#382D24', 0.85, 0.02); // Lower & Upper Horizontal Rattan Bundles (橫向省藤束圈)
-        const borderTrim     = mat('#221B17', 0.95, 0.00); // Dark Leather/Rattan Border Trim (厚皮包邊)
-        const tieCordMat     = mat('#261F1A', 0.90, 0.00); // Chest Braided Tie Rope (胸前開襟繩結)
+        const leatherBacking = mat('#4A3828', 0.80, 0.02); // Authentic Buffalo Leather Backing (水牛皮底襯) — brighter
+        const rattanRod      = mat('#7A6040', 0.65, 0.05); // Aged Vertical Rattan Spar Rods (直向省藤棒條) — natural rattan tan
+        const rattanBundle   = mat('#6B5535', 0.70, 0.04); // Lower & Upper Horizontal Rattan Bundles (橫向省藤束圈)
+        const borderTrim     = mat('#3D2E20', 0.85, 0.02); // Dark Leather/Rattan Border Trim (厚皮包邊)
+        const tieCordMat     = mat('#503A28', 0.78, 0.02); // Chest Braided Tie Rope (胸前開襟繩結)
 
         // 1. Solid Dark Buffalo Leather Backing Vest Shell (水牛皮防護底襯背心)
         const innerShell = add(new THREE.CylinderGeometry(0.44, 0.42, 0.86, 32, 1, false, Math.PI * 0.22, Math.PI * 1.56), leatherBacking);
